@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WatchStatus {
+  active
+  paused
+  error
+}
+
+enum ProviderState {
+  open
+  closed
+  unknown
+}
+
+enum AlertType {
+  seats_open
+  waitlist_change
+  state_change
+}
+
+enum LogLevel {
+  info
+  warn
+  error
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  passwordHash String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  watchItems   WatchItem[]
+}
+
+model College {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  adapterKey  String
+  defaultTerm String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  watchItems  WatchItem[]
+  providerLog ProviderLog[]
+}
+
+model WatchItem {
+  id                String         @id @default(cuid())
+  userId            String
+  collegeId         String
+  term              String?
+  subject           String?
+  catalogNumber     String?
+  sectionLabel      String?
+  sectionId         String
+  detailUrl         String?
+  status            WatchStatus    @default(active)
+  alertOnWaitlist   Boolean        @default(false)
+  lastCheckedAt     DateTime?
+  lastKnownSeats    Int?
+  lastKnownWaitlist Int?
+  lastKnownState    ProviderState  @default(unknown)
+  lastChangeAt      DateTime?
+  failureCount      Int            @default(0)
+  nextCheckAt       DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  user      User    @relation(fields: [userId], references: [id])
+  college   College @relation(fields: [collegeId], references: [id])
+  alerts    AlertEvent[]
+  logs      ProviderLog[]
+
+  @@index([userId])
+  @@index([collegeId])
+}
+
+model AlertEvent {
+  id          String    @id @default(cuid())
+  watchItemId String
+  type        AlertType
+  payload     Json
+  sentAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  watchItem WatchItem @relation(fields: [watchItemId], references: [id])
+
+  @@index([watchItemId])
+}
+
+model ProviderLog {
+  id          String    @id @default(cuid())
+  collegeId   String?
+  watchItemId String?
+  level       LogLevel
+  message     String
+  meta        Json
+  createdAt   DateTime @default(now())
+
+  college   College?   @relation(fields: [collegeId], references: [id])
+  watchItem WatchItem? @relation(fields: [watchItemId], references: [id])
+
+  @@index([collegeId])
+  @@index([watchItemId])
+}

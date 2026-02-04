@@ -1,0 +1,61 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: creditsniper
+    ports:
+      - '5432:5432'
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/creditsniper
+      JWT_SECRET: replace-with-strong-secret
+      BASE_URL: http://localhost:3000
+      ADMIN_EMAILS: admin@example.com
+      WATCH_POLL_INTERVAL_SECONDS: 90
+      WATCH_BACKOFF_SECONDS: 300
+      WATCH_MAX_PER_USER: 10
+      SEARCH_RATE_LIMIT_WINDOW_SECONDS: 60
+      SEARCH_RATE_LIMIT_MAX: 20
+      PROVIDER_USER_AGENT: CreditSniperBot/1.0 (+https://creditsniper.app)
+      FHDA_BASE_URL: https://www2.foothill.edu
+      DEANZA_BASE_URL: https://www2.deanza.edu
+      DVC_SEARCH_BASE_URL: https://webapps.4cd.edu/apps/courseschedulesearch
+      SMC_SEARCH_BASE_URL: https://www.smc.edu/academics/classes/searchable-schedule/
+      IVC_SEARCH_BASE_URL: https://mysite.socccd.edu/eservices
+    ports:
+      - '3000:3000'
+
+  worker:
+    build: .
+    depends_on:
+      - db
+    command: npm run worker
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/creditsniper
+      JWT_SECRET: replace-with-strong-secret
+      BASE_URL: http://localhost:3000
+      ADMIN_EMAILS: admin@example.com
+      WATCH_POLL_INTERVAL_SECONDS: 90
+      WATCH_BACKOFF_SECONDS: 300
+      WATCH_MAX_PER_USER: 10
+      SEARCH_RATE_LIMIT_WINDOW_SECONDS: 60
+      SEARCH_RATE_LIMIT_MAX: 20
+      PROVIDER_USER_AGENT: CreditSniperBot/1.0 (+https://creditsniper.app)
+      FHDA_BASE_URL: https://www2.foothill.edu
+      DEANZA_BASE_URL: https://www2.deanza.edu
+      DVC_SEARCH_BASE_URL: https://webapps.4cd.edu/apps/courseschedulesearch
+      SMC_SEARCH_BASE_URL: https://www.smc.edu/academics/classes/searchable-schedule/
+      IVC_SEARCH_BASE_URL: https://mysite.socccd.edu/eservices
+
+volumes:
+  db_data:

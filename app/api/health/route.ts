@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import PgBoss from 'pg-boss';
+import { PgBoss } from 'pg-boss';
 import { prisma } from '@/src/lib/prisma';
 import { env } from '@/src/lib/env';
 
@@ -16,7 +16,7 @@ export async function GET() {
   try {
     const boss = new PgBoss({ connectionString: env.DATABASE_URL });
     await boss.start();
-    await boss.getState();
+
     await boss.stop();
   } catch {
     queue = 'error';

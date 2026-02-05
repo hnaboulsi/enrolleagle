@@ -1,5 +1,6 @@
 import { prisma } from '@/src/lib/prisma';
 import { env } from '@/src/lib/env';
+import { WatchStatus } from '@prisma/client';
 
 export async function ensureWatchLimit(userId: string) {
   const count = await prisma.watchItem.count({ where: { userId } });
@@ -38,7 +39,7 @@ export async function addWatchItem(input: {
 export async function updateWatchItem(
   id: string,
   userId: string,
-  patch: Partial<{ status: string; alertOnWaitlist: boolean }>
+  patch: Partial<{ status: WatchStatus; alertOnWaitlist: boolean }>
 ) {
   const existing = await prisma.watchItem.findFirst({ where: { id, userId } });
   if (!existing) {

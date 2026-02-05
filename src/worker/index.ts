@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import PgBoss from 'pg-boss';
+import { PgBoss } from 'pg-boss';
 import { env } from '@/src/lib/env';
 import { pollWatchItems } from '@/src/services/pollingService';
 import { log } from '@/src/lib/logger';

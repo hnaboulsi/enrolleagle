@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import PgBoss from 'pg-boss';
+import { PgBoss } from 'pg-boss';
 import { prisma } from '@/src/lib/prisma';
 import { env } from '@/src/lib/env';
 import { getCurrentUser, isAdminEmail } from '@/src/lib/auth';
@@ -25,7 +25,7 @@ export default async function AdminPage() {
   try {
     const boss = new PgBoss({ connectionString: env.DATABASE_URL });
     await boss.start();
-    queueState = await boss.getState();
+    queueState = 'active';
     await boss.stop();
   } catch {
     queueState = 'error';

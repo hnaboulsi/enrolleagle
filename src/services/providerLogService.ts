@@ -5,7 +5,7 @@ export async function logProviderEvent(input: {
   watchItemId?: string | null;
   level: 'info' | 'warn' | 'error';
   message: string;
-  meta?: Record<string, unknown>;
+  meta?: Record<string, any>;
 }) {
   await prisma.providerLog.create({
     data: {

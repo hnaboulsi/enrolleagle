@@ -100,14 +100,14 @@ export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="card space-y-5 p-7 border border-emerald-100">
+      <div className="card space-y-5 p-7 border-2 border-brand-200/60 shadow-lg">
         <div className="grid gap-4 md:grid-cols-2">
           <CollegeSelect value={collegeSlug} options={colleges} onChange={setCollegeSlug} />
           <TermSelect collegeSlug={collegeSlug} value={term} onChange={setTerm} />
         </div>
 
         {isComingSoon && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
+          <div className="rounded-xl border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50 px-5 py-4 text-sm text-amber-900 shadow-sm">
             <strong className="font-semibold">{selectedCollege?.name}</strong> is coming soon.
             Search is not available for this college yet. Try <strong>Foothill College</strong> or <strong>De Anza College</strong>.
           </div>
@@ -127,7 +127,7 @@ export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
         )}
 
         {error && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <div className="rounded-xl border-2 border-rose-300 bg-gradient-to-r from-rose-50 to-pink-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
             {error}
           </div>
         )}
@@ -136,36 +136,36 @@ export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
       {!selected ? (
         <SectionResultsList items={results} onSelect={setSelected} />
       ) : (
-        <div className="card p-7 border border-emerald-100">
-          <h3 className="text-xl font-bold text-slate-800">Confirm Watch</h3>
+        <div className="card p-7 border-2 border-brand-200/60 shadow-xl">
+          <h3 className="text-xl font-bold bg-gradient-to-r from-brand-600 to-accent-600 bg-clip-text text-transparent">Confirm Watch</h3>
           <p className="mt-2 text-sm text-slate-600">
             We&apos;ll monitor this section and email you the moment seats open.
           </p>
           <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-            <div className="rounded-lg bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold uppercase text-slate-400">College</p>
+            <div className="rounded-xl bg-gradient-to-br from-brand-50 to-blue-50 px-4 py-3 border border-brand-100">
+              <p className="text-xs font-semibold uppercase text-brand-600">College</p>
               <p className="font-medium text-slate-800 mt-1">{selectedCollege?.name}</p>
             </div>
-            <div className="rounded-lg bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold uppercase text-slate-400">Term</p>
+            <div className="rounded-xl bg-gradient-to-br from-accent-50 to-purple-50 px-4 py-3 border border-accent-100">
+              <p className="text-xs font-semibold uppercase text-accent-600">Term</p>
               <p className="font-medium text-slate-800 mt-1">{term}</p>
             </div>
-            <div className="rounded-lg bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold uppercase text-slate-400">Course</p>
+            <div className="rounded-xl bg-gradient-to-br from-brand-50 to-blue-50 px-4 py-3 border border-brand-100">
+              <p className="text-xs font-semibold uppercase text-brand-600">Course</p>
               <p className="font-medium text-slate-800 mt-1">
                 {selected.subject} {selected.catalogNumber} {selected.courseTitle ? `- ${selected.courseTitle}` : ''}
               </p>
             </div>
-            <div className="rounded-lg bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold uppercase text-slate-400">Section</p>
+            <div className="rounded-xl bg-gradient-to-br from-accent-50 to-purple-50 px-4 py-3 border border-accent-100">
+              <p className="text-xs font-semibold uppercase text-accent-600">Section</p>
               <p className="font-medium text-slate-800 mt-1">{selected.sectionLabel ?? selected.externalSectionId}</p>
             </div>
-            <div className="rounded-lg bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold uppercase text-slate-400">Seats Available</p>
+            <div className="rounded-xl bg-gradient-to-br from-brand-50 to-blue-50 px-4 py-3 border border-brand-100">
+              <p className="text-xs font-semibold uppercase text-brand-600">Seats Available</p>
               <p className="font-medium text-slate-800 mt-1">{selected.seatsAvailable ?? 'Unknown'}</p>
             </div>
-            <div className="rounded-lg bg-slate-50 px-4 py-3">
-              <p className="text-xs font-semibold uppercase text-slate-400">Waitlist</p>
+            <div className="rounded-xl bg-gradient-to-br from-accent-50 to-purple-50 px-4 py-3 border border-accent-100">
+              <p className="text-xs font-semibold uppercase text-accent-600">Waitlist</p>
               <p className="font-medium text-slate-800 mt-1">{selected.waitlistAvailable ?? 'Unknown'}</p>
             </div>
           </div>

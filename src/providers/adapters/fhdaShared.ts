@@ -26,6 +26,9 @@ function parseSectionLabel(line: string) {
 }
 
 function parseState(line: string): ProviderState | null {
+  // Don't match seat availability lines
+  if (/seats/i.test(line)) return null;
+
   if (/\bOpen\b/i.test(line)) return 'open';
   if (/\bClosed\b/i.test(line)) return 'closed';
   return null;

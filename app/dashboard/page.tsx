@@ -79,7 +79,7 @@ export default async function DashboardPage() {
         </div>
         {recentAlerts.length === 0 ? (
           <p className="text-sm text-slate-500 py-4 text-center">
-            No alerts yet. We'll notify you when seats become available.
+            No alerts yet. We&apos;ll notify you when seats become available.
           </p>
         ) : (
           <ul className="space-y-3">

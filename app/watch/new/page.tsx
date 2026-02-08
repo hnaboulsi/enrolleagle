@@ -41,7 +41,7 @@ export default async function AddWatchPage() {
     <div className="space-y-8 pt-8 fade-in">
       <div>
         <h1 className="text-4xl font-bold text-slate-800">Add a Watch</h1>
-        <p className="text-base text-slate-600 mt-1">Find a class section and we'll monitor it for seat changes</p>
+        <p className="text-base text-slate-600 mt-1">Find a class section and we&apos;ll monitor it for seat changes</p>
       </div>
       <AddWatchFlow colleges={collegeOptions} />
     </div>

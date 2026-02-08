@@ -139,7 +139,7 @@ export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
         <div className="card p-7 border border-emerald-100">
           <h3 className="text-xl font-bold text-slate-800">Confirm Watch</h3>
           <p className="mt-2 text-sm text-slate-600">
-            We'll monitor this section and email you the moment seats open.
+            We&apos;ll monitor this section and email you the moment seats open.
           </p>
           <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
             <div className="rounded-lg bg-slate-50 px-4 py-3">

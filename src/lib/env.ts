@@ -36,25 +36,41 @@ const envSchema = z.object({
   ADMIN_EMAILS: z.string().default('')
 });
 
-export const env = envSchema.parse({
-  NODE_ENV: process.env.NODE_ENV,
-  DATABASE_URL: process.env.DATABASE_URL,
-  SESSION_SECRET: process.env.SESSION_SECRET,
-  APP_URL: process.env.APP_URL,
-  APP_NAME: process.env.APP_NAME,
-  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
-  POLL_INTERVAL_SECONDS: process.env.POLL_INTERVAL_SECONDS,
-  MAX_WATCH_ITEMS_FREE: process.env.MAX_WATCH_ITEMS_FREE,
-  ALERT_DEDUP_HOURS: process.env.ALERT_DEDUP_HOURS,
-  ALERT_ON_WAITLIST: process.env.ALERT_ON_WAITLIST,
-  EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
-  SMTP_HOST: process.env.SMTP_HOST,
-  SMTP_PORT: process.env.SMTP_PORT,
-  SMTP_USER: process.env.SMTP_USER,
-  SMTP_PASS: process.env.SMTP_PASS,
-  SMTP_FROM: process.env.SMTP_FROM,
-  SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
-  ADMIN_EMAILS: process.env.ADMIN_EMAILS
+type Env = z.infer<typeof envSchema>;
+
+let _env: Env | null = null;
+
+function parseEnv(): Env {
+  return envSchema.parse({
+    NODE_ENV: process.env.NODE_ENV,
+    DATABASE_URL: process.env.DATABASE_URL,
+    SESSION_SECRET: process.env.SESSION_SECRET,
+    APP_URL: process.env.APP_URL,
+    APP_NAME: process.env.APP_NAME,
+    SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
+    POLL_INTERVAL_SECONDS: process.env.POLL_INTERVAL_SECONDS,
+    MAX_WATCH_ITEMS_FREE: process.env.MAX_WATCH_ITEMS_FREE,
+    ALERT_DEDUP_HOURS: process.env.ALERT_DEDUP_HOURS,
+    ALERT_ON_WAITLIST: process.env.ALERT_ON_WAITLIST,
+    EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    SMTP_FROM: process.env.SMTP_FROM,
+    SENDGRID_API_KEY: process.env.SENDGRID_API_KEY,
+    ADMIN_EMAILS: process.env.ADMIN_EMAILS
+  });
+}
+
+/** Lazily parsed env — only validates on first access at runtime, not at build time. */
+export const env: Env = new Proxy({} as Env, {
+  get(_target, prop: string) {
+    if (!_env) {
+      _env = parseEnv();
+    }
+    return _env[prop as keyof Env];
+  }
 });
 
 export function adminEmailSet(): Set<string> {

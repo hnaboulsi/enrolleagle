@@ -1,5 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
-import { getProvider } from '@/src/providers';
+import { getProvider, isSupported } from '@/src/providers';
 
 export async function searchSections(input: {
   collegeSlug: string;
@@ -11,6 +11,10 @@ export async function searchSections(input: {
   const college = await prisma.college.findUnique({ where: { slug: input.collegeSlug } });
   if (!college) {
     throw new Error('College not found');
+  }
+
+  if (!isSupported(college.slug)) {
+    throw new Error(`${college.name} is coming soon — search is not available yet.`);
   }
 
   const provider = getProvider(college.adapterKey);

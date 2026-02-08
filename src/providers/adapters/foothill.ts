@@ -6,8 +6,7 @@ import { logProviderError } from '@/src/providers/logger';
 import { snippet } from '@/src/providers/utils';
 import type { AvailabilityProvider, AvailabilityResult, SectionCandidate } from '@/src/providers/types';
 
-// TODO: Verify the current Foothill schedule endpoint (prefer official JSON if available).
-const BASE_URL = 'https://www2.foothill.edu';
+const BASE_URL = 'https://www.foothill.edu';
 
 function resolveDept(subject?: string | null) {
   if (!subject) return null;

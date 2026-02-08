@@ -40,51 +40,55 @@ export function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
   }
 
   return (
-    <div className="card space-y-4 p-6">
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</label>
+        <input
+          className="input mt-2"
+          type="email"
+          required
+          placeholder="you@example.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          disabled={loading}
+        />
+      </div>
+      <div>
+        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Password</label>
+        <input
+          className="input mt-2"
+          type="password"
+          required
+          minLength={10}
+          placeholder="Min. 10 characters"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          disabled={loading}
+        />
+      </div>
+      {mode === 'signup' && (
         <div>
-          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Email</label>
-          <input
-            className="input mt-2"
-            type="email"
-            required
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            disabled={loading}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Password</label>
+          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Confirm password</label>
           <input
             className="input mt-2"
             type="password"
             required
             minLength={10}
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Repeat your password"
+            value={confirm}
+            onChange={(event) => setConfirm(event.target.value)}
             disabled={loading}
           />
-          <p className="mt-2 text-xs text-slate-500">Minimum 10 characters.</p>
         </div>
-        {mode === 'signup' ? (
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Confirm password</label>
-            <input
-              className="input mt-2"
-              type="password"
-              required
-              minLength={10}
-              value={confirm}
-              onChange={(event) => setConfirm(event.target.value)}
-              disabled={loading}
-            />
-          </div>
-        ) : null}
-        {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <button disabled={loading} className="btn-primary w-full disabled:opacity-60">
-          {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Create account'}
-        </button>
-      </form>
-    </div>
+      )}
+      {error && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {error}
+        </div>
+      )}
+      <button disabled={loading} className="btn-primary w-full disabled:opacity-60 py-3 text-base">
+        {loading ? 'Please wait...' : mode === 'login' ? 'Log in' : 'Create account'}
+      </button>
+    </form>
   );
 }

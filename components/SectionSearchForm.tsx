@@ -22,39 +22,44 @@ export function SectionSearchForm({
   loading: boolean;
 }) {
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 md:grid-cols-3">
-      <div>
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Subject</label>
-        <input
-          className="input mt-2"
-          placeholder="e.g. MATH"
-          value={subject}
-          onChange={(event) => onSubjectChange(event.target.value.toUpperCase())}
-        />
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Subject <span className="text-rose-400">*</span>
+          </label>
+          <input
+            className="input mt-2"
+            placeholder="e.g. CS, MATH, ENGL"
+            value={subject}
+            onChange={(event) => onSubjectChange(event.target.value.toUpperCase())}
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Course number</label>
+          <input
+            className="input mt-2"
+            placeholder="e.g. 1A (optional)"
+            value={number}
+            onChange={(event) => onNumberChange(event.target.value.toUpperCase())}
+          />
+        </div>
+        <div>
+          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Keyword</label>
+          <input
+            className="input mt-2"
+            placeholder="e.g. Calculus (optional)"
+            value={keyword}
+            onChange={(event) => onKeywordChange(event.target.value)}
+          />
+        </div>
       </div>
-      <div>
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Course number</label>
-        <input
-          className="input mt-2"
-          placeholder="e.g. 1A"
-          value={number}
-          onChange={(event) => onNumberChange(event.target.value.toUpperCase())}
-        />
-      </div>
-      <div>
-        <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Keyword</label>
-        <input
-          className="input mt-2"
-          placeholder="e.g. Calculus"
-          value={keyword}
-          onChange={(event) => onKeywordChange(event.target.value)}
-        />
-      </div>
-      <div className="md:col-span-3">
-        <button className="btn-primary" disabled={loading || (!subject && !keyword)}>
-          {loading ? 'Searching…' : 'Search sections'}
-        </button>
-      </div>
+      <button
+        className="btn-primary w-full md:w-auto"
+        disabled={loading || (!subject && !keyword)}
+      >
+        {loading ? 'Searching...' : 'Search sections'}
+      </button>
     </form>
   );
 }

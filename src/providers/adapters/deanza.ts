@@ -6,8 +6,7 @@ import { logProviderError } from '@/src/providers/logger';
 import { snippet } from '@/src/providers/utils';
 import type { AvailabilityProvider, AvailabilityResult, SectionCandidate } from '@/src/providers/types';
 
-// TODO: Verify the current De Anza schedule endpoint (prefer official JSON if available).
-const BASE_URL = 'https://www2.deanza.edu';
+const BASE_URL = 'https://www.deanza.edu';
 
 function resolveDept(subject?: string | null) {
   if (!subject) return null;

@@ -13,6 +13,13 @@ const providers: Record<string, AvailabilityProvider> = {
   ivc: new IvcProvider()
 };
 
+/** Colleges whose schedule pages are confirmed to work with our parsers. */
+export const SUPPORTED_SLUGS = new Set(['foothill', 'deanza']);
+
+export function isSupported(slug: string) {
+  return SUPPORTED_SLUGS.has(slug);
+}
+
 export function getProvider(adapterKey: string): AvailabilityProvider {
   const provider = providers[adapterKey];
   if (!provider) {

@@ -12,7 +12,7 @@ export async function fetchWithTimeout(
         ...options,
         signal: controller.signal,
         headers: {
-          'User-Agent': 'AddDropperBot/0.1 (support@adddropper.com)',
+          'User-Agent': 'Mozilla/5.0 (compatible; AddDropper/0.1)',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
           ...options.headers

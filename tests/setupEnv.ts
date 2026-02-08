@@ -1,4 +1,3 @@
-process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
 process.env.SESSION_SECRET = 'test-secret-that-is-at-least-32-chars';
 process.env.APP_URL = 'http://localhost:3000';

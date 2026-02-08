@@ -21,7 +21,7 @@
     "cheerio": "^1.0.0-rc.12",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
-    "iron-session": "^6.3.1",
+    "iron-session": "^8.0.4",
     "next": "14.2.5",
     "nodemailer": "^6.9.13",
     "pg-boss": "^12.9.0",

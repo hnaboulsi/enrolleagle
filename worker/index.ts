@@ -5,6 +5,7 @@ import { enqueueDueWatchItems, pollWatchItem } from '@/src/services/pollingServi
 import { log } from '@/src/lib/logger';
 
 const boss = new PgBoss({ connectionString: env.DATABASE_URL });
+type PollWatchPayload = { watchItemId: string };
 
 async function start() {
   await boss.start();
@@ -15,7 +16,8 @@ async function start() {
 
   await boss.work('poll-watch-item', { groupConcurrency: 3 }, async (jobs) => {
     for (const job of jobs) {
-      await pollWatchItem(job.data.watchItemId);
+      const payload = job.data as PollWatchPayload;
+      await pollWatchItem(payload.watchItemId);
     }
   });
 

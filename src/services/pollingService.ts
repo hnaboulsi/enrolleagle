@@ -3,7 +3,7 @@ import { env } from '@/src/lib/env';
 import { getProvider } from '@/src/providers';
 import { sendAlertEmail } from '@/src/services/alertService';
 import { logProviderEvent } from '@/src/services/providerLogService';
-import type { ProviderState } from '@prisma/client';
+import type { Prisma, ProviderState } from '@prisma/client';
 import type { PgBoss } from 'pg-boss';
 
 const DEDUP_MS = env.ALERT_DEDUP_HOURS * 60 * 60 * 1000;
@@ -30,7 +30,7 @@ function isDue(item: { lastCheckedAt: Date | null; consecutiveFailures: number }
 async function sendOrRetryAlert(input: {
   watchItemId: string;
   type: 'SEATS_OPENED' | 'WAITLIST_CHANGED' | 'STATE_CHANGED';
-  payload: Record<string, unknown>;
+  payload: Prisma.InputJsonValue;
   email: {
     to: string;
     collegeName: string;

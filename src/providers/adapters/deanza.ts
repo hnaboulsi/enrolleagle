@@ -4,7 +4,7 @@ import { parseFhdaScheduleHtml } from '@/src/providers/adapters/fhdaShared';
 import { deanzaSubjectMap } from '@/src/providers/adapters/deanzaSubjectMap';
 import { logProviderError } from '@/src/providers/logger';
 import { snippet } from '@/src/providers/utils';
-import type { AvailabilityProvider, SectionCandidate } from '@/src/providers/types';
+import type { AvailabilityProvider, AvailabilityResult, SectionCandidate } from '@/src/providers/types';
 
 // TODO: Verify the current De Anza schedule endpoint (prefer official JSON if available).
 const BASE_URL = 'https://www2.deanza.edu';
@@ -70,7 +70,7 @@ export class DeAnzaProvider implements AvailabilityProvider {
     return results;
   }
 
-  async getAvailability(params: { term: string; externalSectionId: string; externalUrl?: string }) {
+  async getAvailability(params: { term: string; externalSectionId: string; externalUrl?: string }): Promise<AvailabilityResult> {
     const scheduleUrl = params.externalUrl || buildScheduleUrl(null);
     if (!scheduleUrl) {
       return { seatsAvailable: null, waitlistAvailable: null, state: 'unknown' };

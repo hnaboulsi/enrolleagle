@@ -4,7 +4,7 @@ import { parseFhdaScheduleHtml } from '@/src/providers/adapters/fhdaShared';
 import { foothillSubjectMap } from '@/src/providers/adapters/foothillSubjectMap';
 import { logProviderError } from '@/src/providers/logger';
 import { snippet } from '@/src/providers/utils';
-import type { AvailabilityProvider, SectionCandidate } from '@/src/providers/types';
+import type { AvailabilityProvider, AvailabilityResult, SectionCandidate } from '@/src/providers/types';
 
 // TODO: Verify the current Foothill schedule endpoint (prefer official JSON if available).
 const BASE_URL = 'https://www2.foothill.edu';
@@ -70,7 +70,7 @@ export class FoothillProvider implements AvailabilityProvider {
     return results;
   }
 
-  async getAvailability(params: { term: string; externalSectionId: string; externalUrl?: string }) {
+  async getAvailability(params: { term: string; externalSectionId: string; externalUrl?: string }): Promise<AvailabilityResult> {
     const scheduleUrl = params.externalUrl || buildScheduleUrl(null);
     if (!scheduleUrl) {
       return { seatsAvailable: null, waitlistAvailable: null, state: 'unknown' };

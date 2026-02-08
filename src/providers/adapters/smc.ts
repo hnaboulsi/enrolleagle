@@ -3,7 +3,7 @@ import { getCached, setCached } from '@/src/providers/cache';
 import { htmlToLines } from '@/src/providers/parsers/html';
 import { safeNumber, snippet } from '@/src/providers/utils';
 import { logProviderError } from '@/src/providers/logger';
-import type { AvailabilityProvider, SectionCandidate } from '@/src/providers/types';
+import type { AvailabilityProvider, AvailabilityResult, SectionCandidate } from '@/src/providers/types';
 
 // TODO: Verify the current SMC schedule endpoint (prefer official JSON if available).
 const BASE_URL = 'https://www.smc.edu/academics/classes/searchable-schedule/';
@@ -120,7 +120,7 @@ export class SmcProvider implements AvailabilityProvider {
     return sliced;
   }
 
-  async getAvailability(params: { term: string; externalSectionId: string; externalUrl?: string }) {
+  async getAvailability(params: { term: string; externalSectionId: string; externalUrl?: string }): Promise<AvailabilityResult> {
     const url = params.externalUrl || buildSearchUrl({ term: params.term });
     const response = await fetchWithTimeout(url);
     if (!response.ok) {

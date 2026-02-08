@@ -1,41 +1,45 @@
 export type ProviderState = 'open' | 'closed' | 'unknown';
 
 export type SectionCandidate = {
-  sectionId: string;
-  sectionLabel: string;
+  collegeSlug: 'deanza' | 'foothill' | 'dvc' | 'smc' | 'ivc';
+  term: string;
   subject: string | null;
   catalogNumber: string | null;
-  title?: string | null;
-  term?: string | null;
-  seats?: number | null;
-  waitlist?: number | null;
-  state?: ProviderState;
-  detailUrl?: string | null;
-  raw?: Record<string, unknown>;
+  courseTitle: string | null;
+  sectionLabel: string | null;
+  externalSectionId: string;
+  externalUrl: string | null;
+  seatsAvailable: number | null;
+  waitlistAvailable: number | null;
+  state: ProviderState;
+  meetingInfo: string | null;
 };
 
 export type AvailabilityResult = {
   seatsAvailable: number | null;
-  waitlistAvailable: number | null;
+  waitlistAvailable?: number | null;
   state: ProviderState;
-  raw?: Record<string, unknown>;
+  raw?: any;
 };
 
-export type SearchQuery = {
-  collegeSlug: string;
-  term?: string | null;
-  subject?: string | null;
-  number?: string | null;
-  keyword?: string | null;
-};
-
-export type AvailabilityInput = {
-  sectionId: string;
-  term?: string | null;
-  detailUrl?: string | null;
+export type ProviderSearchParams = {
+  term: string;
+  q?: string;
+  subject?: string;
+  number?: string;
+  limit?: number;
 };
 
 export interface AvailabilityProvider {
-  searchSections(query: SearchQuery): Promise<SectionCandidate[]>;
-  getAvailability(input: AvailabilityInput): Promise<AvailabilityResult>;
+  collegeSlug: 'deanza' | 'foothill' | 'dvc' | 'smc' | 'ivc';
+
+  listTerms(): Promise<{ id: string; label: string }[]>;
+
+  searchSections(params: ProviderSearchParams): Promise<SectionCandidate[]>;
+
+  getAvailability(params: {
+    term: string;
+    externalSectionId: string;
+    externalUrl?: string;
+  }): Promise<AvailabilityResult>;
 }

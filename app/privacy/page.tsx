@@ -3,7 +3,7 @@ export default function PrivacyPage() {
     <div className="max-w-3xl space-y-4 pt-6 text-sm text-slate-700">
       <h1 className="text-3xl font-bold text-ink">Privacy Policy</h1>
       <p>
-        Credit Sniper collects only what we need to deliver seat-availability alerts: your email address and the watchlist
+        AddDropper collects only what we need to deliver seat-availability alerts: your email address and the watchlist
         entries you choose to monitor. We do not store school credentials, student IDs, or enrollment data.
       </p>
       <h2 className="text-xl font-semibold text-ink">Data We Store</h2>
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         availability on your behalf. We do not sell your data.
       </p>
       <h2 className="text-xl font-semibold text-ink">Contact</h2>
-      <p>Email support@creditsniper.app to request data deletion.</p>
+      <p>Email support@adddropper.app to request data deletion.</p>
     </div>
   );
 }

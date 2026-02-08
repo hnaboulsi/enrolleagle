@@ -3,7 +3,7 @@ export default function TermsPage() {
     <div className="max-w-3xl space-y-4 pt-6 text-sm text-slate-700">
       <h1 className="text-3xl font-bold text-ink">Terms of Service</h1>
       <p>
-        Credit Sniper provides seat-availability alerts only. We do not enroll students, submit applications, or access
+        AddDropper provides seat-availability alerts only. We do not enroll students, submit applications, or access
         school credentials. You are responsible for completing your own registration with your college.
       </p>
       <h2 className="text-xl font-semibold text-ink">Acceptable Use</h2>

@@ -1,4 +1,12 @@
+process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test';
-process.env.JWT_SECRET = 'test-secret-that-is-at-least-32-chars';
+process.env.SESSION_SECRET = 'test-secret-that-is-at-least-32-chars';
+process.env.APP_URL = 'http://localhost:3000';
+process.env.APP_NAME = 'AddDropper';
+process.env.SUPPORT_EMAIL = 'support@adddropper.com';
+process.env.POLL_INTERVAL_SECONDS = '90';
+process.env.MAX_WATCH_ITEMS_FREE = '10';
+process.env.ALERT_DEDUP_HOURS = '6';
+process.env.ALERT_ON_WAITLIST = 'false';
+process.env.EMAIL_PROVIDER = 'smtp';
 process.env.ADMIN_EMAILS = '';
-process.env.BASE_URL = 'http://localhost:3000';

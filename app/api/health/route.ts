@@ -8,7 +8,7 @@ export async function GET() {
   let queue = 'ok';
 
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await prisma.$queryRawUnsafe('SELECT 1');
   } catch {
     db = 'error';
   }
@@ -16,7 +16,6 @@ export async function GET() {
   try {
     const boss = new PgBoss({ connectionString: env.DATABASE_URL });
     await boss.start();
-
     await boss.stop();
   } catch {
     queue = 'error';

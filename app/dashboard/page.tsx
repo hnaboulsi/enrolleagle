@@ -1,7 +1,9 @@
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { WatchlistClient, WatchItemView } from '@/components/WatchlistClient';
 import { getCurrentUser } from '@/src/lib/auth';
 import { prisma } from '@/src/lib/prisma';
+import { WatchlistTable, WatchItemRow } from '@/components/WatchlistTable';
+import { LogoutButton } from '@/components/LogoutButton';
 
 export default async function DashboardPage() {
   const user = await getCurrentUser();
@@ -10,7 +12,7 @@ export default async function DashboardPage() {
   }
 
   const items = await prisma.watchItem.findMany({
-    where: { userId: user.id },
+    where: { userId: user.id, status: { not: 'DELETED' } },
     orderBy: { createdAt: 'desc' },
     include: { college: true }
   });
@@ -22,29 +24,46 @@ export default async function DashboardPage() {
     take: 5
   });
 
-  const viewItems: WatchItemView[] = items.map((item) => ({
+  const hasFailures = items.some((item) => item.consecutiveFailures > 0);
+
+  const viewItems: WatchItemRow[] = items.map((item) => ({
     id: item.id,
-    college: item.college.name,
+    collegeName: item.college.name,
     term: item.term,
     subject: item.subject,
     catalogNumber: item.catalogNumber,
+    courseTitle: item.courseTitle,
     sectionLabel: item.sectionLabel,
-    status: item.status,
-    lastCheckedAt: item.lastCheckedAt ? item.lastCheckedAt.toISOString() : null,
     lastKnownSeats: item.lastKnownSeats,
-    lastKnownWaitlist: item.lastKnownWaitlist,
     lastKnownState: item.lastKnownState,
-    lastChangeAt: item.lastChangeAt ? item.lastChangeAt.toISOString() : null,
-    alertOnWaitlist: item.alertOnWaitlist
+    lastCheckedAt: item.lastCheckedAt ? item.lastCheckedAt.toISOString() : null,
+    status: item.status,
+    consecutiveFailures: item.consecutiveFailures
   }));
 
   return (
     <div className="space-y-6 pt-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-sm text-slate-600">Monitor seat availability across your selected classes.</p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-sm text-slate-600">Monitor seat availability across your selected classes.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link href="/watch/new" className="btn-primary">
+            Add watch
+          </Link>
+          <LogoutButton />
+        </div>
       </div>
-      <WatchlistClient items={viewItems} />
+
+      {hasFailures ? (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          Some checks are failing; see details in the watch list or admin diagnostics.
+        </div>
+      ) : null}
+
+      <WatchlistTable items={viewItems} />
+
       <div className="card p-6">
         <h2 className="text-lg font-semibold">Recent alerts</h2>
         {recentAlerts.length === 0 ? (
@@ -53,8 +72,8 @@ export default async function DashboardPage() {
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             {recentAlerts.map((alert) => (
               <li key={alert.id}>
-                {alert.watchItem.college.name} · {alert.watchItem.sectionLabel ?? alert.watchItem.sectionId} ·{' '}
-                {alert.type.replace('_', ' ')} · {alert.createdAt.toISOString()}
+                {alert.watchItem.college.name} · {alert.watchItem.sectionLabel ?? alert.watchItem.externalSectionId} ·{' '}
+                {alert.type.replace(/_/g, ' ')} · {alert.createdAt.toLocaleString()}
               </li>
             ))}
           </ul>

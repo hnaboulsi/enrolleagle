@@ -1,42 +1,53 @@
 import { sendEmail } from '@/src/lib/email';
 import { env } from '@/src/lib/env';
-import type { AlertType } from '@prisma/client';
 
-export async function sendAlertEmail(input: {
+export type AlertEmailInput = {
   to: string;
-  alertType: AlertType;
   collegeName: string;
-  sectionLabel: string | null;
+  term: string;
   subject: string | null;
   catalogNumber: string | null;
+  sectionLabel: string | null;
   seatsAvailable: number | null;
-  waitlistAvailable: number | null;
-  state: string;
-}) {
-  const subjectLine = `${input.collegeName}: ${input.sectionLabel ?? 'Class'} is now ${input.state}`;
-  const detailLine = [input.subject, input.catalogNumber].filter(Boolean).join(' ');
+  watchItemId: string;
+  alertType: 'SEATS_OPENED' | 'WAITLIST_CHANGED' | 'STATE_CHANGED';
+};
+
+export function buildWatchUrl(watchItemId: string) {
+  return `${env.APP_URL}/watch/${watchItemId}`;
+}
+
+export async function sendAlertEmail(input: AlertEmailInput) {
+  const courseLine = [input.subject, input.catalogNumber].filter(Boolean).join(' ');
+  const label = input.sectionLabel ?? 'Section';
+  const subjectLine =
+    input.alertType === 'SEATS_OPENED'
+      ? `Seat Open: ${input.collegeName} ${courseLine} ${label}`.replace(/\s+/g, ' ').trim()
+      : `Update: ${input.collegeName} ${courseLine} ${label}`.replace(/\s+/g, ' ').trim();
+
+  const watchUrl = buildWatchUrl(input.watchItemId);
+
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-      <h2>${input.collegeName} Seat Alert</h2>
-      <p><strong>${input.sectionLabel ?? 'Class Section'}</strong> ${detailLine ? `(${detailLine})` : ''}</p>
-      <p>Status: <strong>${input.state}</strong></p>
-      <p>Seats available: ${input.seatsAvailable ?? 'Unknown'}</p>
-      <p>Waitlist available: ${input.waitlistAvailable ?? 'Unknown'}</p>
-      <p>Alert type: ${input.alertType.replace('_', ' ')}</p>
-      <p>Check availability directly with the college if you plan to enroll.</p>
+      <h2>Seat Alert from ${env.APP_NAME}</h2>
+      <p><strong>${input.collegeName}</strong> · ${input.term}</p>
+      <p><strong>${courseLine || 'Course'}</strong> · ${label}</p>
+      <p>Seats available now: <strong>${input.seatsAvailable ?? 'Unknown'}</strong></p>
+      <p>
+        <a href="${watchUrl}">View this watch</a>
+      </p>
+      <p>Enroll through your college portal. ${env.APP_NAME} does not enroll or store school credentials.</p>
     </div>
   `;
 
-  await sendEmail({
-    to: input.to,
-    subject: subjectLine,
-    html,
-    text: `${input.collegeName} - ${input.sectionLabel ?? 'Class'} is ${input.state}. Seats: ${
-      input.seatsAvailable ?? 'Unknown'
-    }. Waitlist: ${input.waitlistAvailable ?? 'Unknown'}.`
-  });
-}
+  const text = [
+    `${env.APP_NAME} seat alert`,
+    `${input.collegeName} · ${input.term}`,
+    `${courseLine || 'Course'} · ${label}`,
+    `Seats available now: ${input.seatsAvailable ?? 'Unknown'}`,
+    `View: ${watchUrl}`,
+    'Enroll through your college portal.'
+  ].join('\n');
 
-export function buildSectionLink(collegeSlug: string, sectionId: string) {
-  return `${env.BASE_URL}/dashboard?college=${collegeSlug}&section=${sectionId}`;
+  await sendEmail({ to: input.to, subject: subjectLine, html, text });
 }

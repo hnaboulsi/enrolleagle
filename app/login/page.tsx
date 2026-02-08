@@ -11,7 +11,7 @@ export default function LoginPage() {
       <AuthForm mode="login" />
       <p className="text-center text-sm text-slate-600">
         New here?{' '}
-        <Link href="/register" className="font-semibold text-emerald-700">
+        <Link href="/signup" className="font-semibold text-emerald-700">
           Create an account
         </Link>
       </p>

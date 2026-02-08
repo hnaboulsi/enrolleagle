@@ -6,7 +6,7 @@ import { Space_Grotesk } from 'next/font/google';
 const spaceGrotesk = Space_Grotesk({ subsets: ['latin'], variable: '--font-space' });
 
 export const metadata: Metadata = {
-  title: 'Credit Sniper',
+  title: 'AddDropper',
   description: 'Real-time seat-availability alerts for California Community College classes.'
 };
 
@@ -17,11 +17,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="gradient-hero">
           <header className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
             <Link href="/" className="text-lg font-black tracking-tight">
-              Credit Sniper
+              AddDropper
             </Link>
             <nav className="flex items-center gap-4 text-sm font-semibold text-slate-700">
               <Link href="/dashboard" className="hover:text-emerald-700">
                 Dashboard
+              </Link>
+              <Link href="/signup" className="hover:text-emerald-700">
+                Sign up
               </Link>
               <Link href="/login" className="hover:text-emerald-700">
                 Log in

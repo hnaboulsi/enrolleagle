@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/src/lib/auth';
+import { getSessionUser } from '@/src/lib/session';
 
 export async function GET() {
-  const user = await getCurrentUser();
+  const user = await getSessionUser();
   if (!user) {
     return NextResponse.json({ user: null }, { status: 401 });
   }

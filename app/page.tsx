@@ -1,9 +1,9 @@
 import Link from 'next/link';
 
 const stats = [
-  { label: 'Colleges', value: '5 CA community colleges' },
-  { label: 'Alert speed', value: '60-120 second checks' },
-  { label: 'Focus', value: 'Seat + waitlist changes' }
+  { label: 'Colleges', value: '5 CCC launch schools' },
+  { label: 'Alert speed', value: '90 second checks + backoff' },
+  { label: 'Focus', value: 'Seat open notifications' }
 ];
 
 export default function HomePage() {
@@ -11,17 +11,17 @@ export default function HomePage() {
     <div className="space-y-16">
       <section className="grid gap-10 pt-6 md:grid-cols-[1.1fr_0.9fr] md:items-center">
         <div className="space-y-6 fade-in">
-          <span className="badge">Realtime seat alerts</span>
+          <span className="badge">Real-time seat alerts</span>
           <h1 className="text-4xl font-black leading-tight text-ink md:text-5xl">
-            Snag the class you need, the moment it opens.
+            Get notified the moment a seat opens.
           </h1>
           <p className="text-base text-slate-700">
-            Credit Sniper watches seat availability for select California Community Colleges and sends instant email alerts
-            when seats open or waitlists move. No auto-enroll, no credentials, just fast notifications.
+            AddDropper watches seat availability for select California Community Colleges and sends instant email alerts
+            when seats open. No auto-enroll, no credentials—just fast notifications.
           </p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/register" className="btn-primary">
-              Start watching classes
+            <Link href="/signup" className="btn-primary">
+              Sign up
             </Link>
             <Link href="/login" className="btn-outline">
               Log in
@@ -37,7 +37,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="card space-y-4 p-6 fade-in">
-          <h3 className="text-lg font-semibold text-slate-800">What you can monitor</h3>
+          <h3 className="text-lg font-semibold text-slate-800">Launch colleges</h3>
           <ul className="space-y-3 text-sm text-slate-600">
             <li>De Anza College</li>
             <li>Foothill College</li>
@@ -46,23 +46,23 @@ export default function HomePage() {
             <li>Irvine Valley College (IVC)</li>
           </ul>
           <div className="rounded-xl bg-emerald-50 px-4 py-3 text-xs text-emerald-900">
-            Alerts fire when seats go from 0 to open, or when waitlist capacity changes (optional).
+            Alerts fire when seats go from closed to open. Waitlist changes are optional.
           </div>
         </div>
       </section>
       <section className="grid gap-6 md:grid-cols-3 stagger">
         {[
           {
-            title: 'Set a watchlist',
-            copy: 'Pick a college, search for a class, and add the exact section to monitor.'
+            title: 'Choose a class',
+            copy: 'Pick a college, search for a class section, and add it to your watchlist.'
           },
           {
-            title: 'Stay up to date',
-            copy: 'We poll official schedules every 1-2 minutes with smart backoff and logging.'
+            title: 'We monitor availability',
+            copy: 'AddDropper checks official schedules on a respectful polling cadence.'
           },
           {
-            title: 'Get notified fast',
-            copy: 'Emails include the last checked time, seats available, and a direct link to the section.'
+            title: 'Get instant alerts',
+            copy: 'We email you the moment seats open with a direct link to your watch details.'
           }
         ].map((item) => (
           <div key={item.title} className="card p-6">

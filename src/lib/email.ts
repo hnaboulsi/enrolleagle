@@ -11,33 +11,36 @@ export type EmailPayload = {
 
 let cachedTransport: nodemailer.Transporter | null = null;
 
-function getTransporter() {
-  if (cachedTransport) return cachedTransport;
-
-  if (env.SENDGRID_API_KEY && env.SENDGRID_FROM) {
-    const transport = nodemailer.createTransport({
+function buildTransporter() {
+  if (env.EMAIL_PROVIDER === 'sendgrid') {
+    if (!env.SENDGRID_API_KEY) {
+      return null;
+    }
+    return nodemailer.createTransport({
       service: 'SendGrid',
       auth: { user: 'apikey', pass: env.SENDGRID_API_KEY }
     });
-    cachedTransport = transport;
-    return transport;
   }
 
-  if (env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASSWORD) {
-    const transport = nodemailer.createTransport({
+  if (env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS) {
+    return nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT ?? 587,
       secure: (env.SMTP_PORT ?? 587) === 465,
       auth: {
         user: env.SMTP_USER,
-        pass: env.SMTP_PASSWORD
+        pass: env.SMTP_PASS
       }
     });
-    cachedTransport = transport;
-    return transport;
   }
 
   return null;
+}
+
+function getTransporter() {
+  if (cachedTransport) return cachedTransport;
+  cachedTransport = buildTransporter();
+  return cachedTransport;
 }
 
 export async function sendEmail(payload: EmailPayload) {
@@ -47,7 +50,7 @@ export async function sendEmail(payload: EmailPayload) {
     return { skipped: true };
   }
 
-  const from = env.SENDGRID_FROM || env.SMTP_FROM || 'alerts@creditsniper.app';
+  const from = env.SMTP_FROM || `${env.APP_NAME} <${env.SUPPORT_EMAIL}>`;
   await transporter.sendMail({
     from,
     to: payload.to,

@@ -8,79 +8,76 @@ datasource db {
 }
 
 enum WatchStatus {
-  active
-  paused
-  error
+  ACTIVE
+  PAUSED
+  DELETED
 }
 
 enum ProviderState {
-  open
-  closed
-  unknown
+  OPEN
+  CLOSED
+  UNKNOWN
 }
 
 enum AlertType {
-  seats_open
-  waitlist_change
-  state_change
+  SEATS_OPENED
+  WAITLIST_CHANGED
+  STATE_CHANGED
 }
 
 enum LogLevel {
-  info
-  warn
-  error
+  INFO
+  WARN
+  ERROR
 }
 
 model User {
-  id           String      @id @default(cuid())
-  email        String      @unique
+  id           String     @id @default(cuid())
+  email        String     @unique
   passwordHash String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   watchItems   WatchItem[]
 }
 
 model College {
-  id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  adapterKey  String
-  defaultTerm String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  watchItems  WatchItem[]
-  providerLog ProviderLog[]
+  id         String        @id @default(cuid())
+  name       String
+  slug       String        @unique
+  adapterKey String
+  createdAt  DateTime      @default(now())
+  watchItems WatchItem[]
+  logs       ProviderLog[]
 }
 
 model WatchItem {
-  id                String         @id @default(cuid())
-  userId            String
-  collegeId         String
-  term              String?
-  subject           String?
-  catalogNumber     String?
-  sectionLabel      String?
-  sectionId         String
-  detailUrl         String?
-  status            WatchStatus    @default(active)
-  alertOnWaitlist   Boolean        @default(false)
-  lastCheckedAt     DateTime?
-  lastKnownSeats    Int?
-  lastKnownWaitlist Int?
-  lastKnownState    ProviderState  @default(unknown)
-  lastChangeAt      DateTime?
-  failureCount      Int            @default(0)
-  nextCheckAt       DateTime?
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  id                  String        @id @default(cuid())
+  userId              String
+  collegeId           String
+  term                String
+  subject             String?
+  catalogNumber       String?
+  courseTitle         String?
+  sectionLabel        String?
+  externalSectionId   String
+  externalUrl         String?
+  status              WatchStatus   @default(ACTIVE)
+  lastCheckedAt       DateTime?
+  lastKnownSeats      Int?
+  lastKnownWaitlist   Int?
+  lastKnownState      ProviderState @default(UNKNOWN)
+  consecutiveFailures Int           @default(0)
+  lastErrorAt         DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
-  user      User    @relation(fields: [userId], references: [id])
-  college   College @relation(fields: [collegeId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  college   College  @relation(fields: [collegeId], references: [id])
   alerts    AlertEvent[]
   logs      ProviderLog[]
 
-  @@index([userId])
-  @@index([collegeId])
+  @@index([userId, status])
+  @@index([collegeId, status])
 }
 
 model AlertEvent {
@@ -93,7 +90,7 @@ model AlertEvent {
 
   watchItem WatchItem @relation(fields: [watchItemId], references: [id])
 
-  @@index([watchItemId])
+  @@index([watchItemId, createdAt])
 }
 
 model ProviderLog {
@@ -108,6 +105,5 @@ model ProviderLog {
   college   College?   @relation(fields: [collegeId], references: [id])
   watchItem WatchItem? @relation(fields: [watchItemId], references: [id])
 
-  @@index([collegeId])
-  @@index([watchItemId])
+  @@index([createdAt])
 }

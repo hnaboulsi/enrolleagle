@@ -1,5 +1,5 @@
 import * as cheerio from 'cheerio';
-import { normalizeText } from '@/src/providers/base';
+import { normalizeText } from '@/src/providers/utils';
 
 export function htmlToLines(html: string) {
   const $ = cheerio.load(html);

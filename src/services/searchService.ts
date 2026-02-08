@@ -1,12 +1,23 @@
 import { prisma } from '@/src/lib/prisma';
 import { getProvider } from '@/src/providers';
-import type { SearchQuery } from '@/src/providers/types';
 
-export async function searchSections(query: SearchQuery) {
-  const college = await prisma.college.findUnique({ where: { slug: query.collegeSlug } });
+export async function searchSections(input: {
+  collegeSlug: string;
+  term?: string;
+  q?: string;
+  subject?: string;
+  number?: string;
+}) {
+  const college = await prisma.college.findUnique({ where: { slug: input.collegeSlug } });
   if (!college) {
     throw new Error('College not found');
   }
+
   const provider = getProvider(college.adapterKey);
-  return provider.searchSections({ ...query, term: query.term ?? college.defaultTerm ?? null });
+  return provider.searchSections({
+    term: input.term ?? 'current',
+    q: input.q,
+    subject: input.subject,
+    number: input.number
+  });
 }

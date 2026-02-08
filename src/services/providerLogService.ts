@@ -1,9 +1,10 @@
 import { prisma } from '@/src/lib/prisma';
+import { LogLevel } from '@prisma/client';
 
 export async function logProviderEvent(input: {
   collegeId?: string | null;
   watchItemId?: string | null;
-  level: 'info' | 'warn' | 'error';
+  level: 'INFO' | 'WARN' | 'ERROR';
   message: string;
   meta?: Record<string, any>;
 }) {
@@ -11,7 +12,7 @@ export async function logProviderEvent(input: {
     data: {
       collegeId: input.collegeId ?? null,
       watchItemId: input.watchItemId ?? null,
-      level: input.level,
+      level: input.level as LogLevel,
       message: input.message,
       meta: input.meta ?? {}
     }

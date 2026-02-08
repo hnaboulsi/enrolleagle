@@ -2,25 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-export type CollegeOption = {
-  id: string;
-  name: string;
-  slug: string;
-};
-
-export type SectionCandidate = {
-  sectionId: string;
-  sectionLabel: string;
-  subject: string | null;
-  catalogNumber: string | null;
-  title?: string | null;
-  term?: string | null;
-  seats?: number | null;
-  waitlist?: number | null;
-  state?: string | null;
-  detailUrl?: string | null;
-};
+import { CollegeSelect, CollegeOption } from '@/components/CollegeSelect';
+import { TermSelect } from '@/components/TermSelect';
+import { SectionSearchForm } from '@/components/SectionSearchForm';
+import { SectionResultsList } from '@/components/SectionResultsList';
+import type { SectionCandidate } from '@/src/providers/types';
 
 export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
   const [collegeSlug, setCollegeSlug] = useState(colleges[0]?.slug ?? '');
@@ -30,23 +16,28 @@ export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
   const [keyword, setKeyword] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SectionCandidate[]>([]);
+  const [selected, setSelected] = useState<SectionCandidate | null>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  const canSearch = useMemo(() => Boolean(collegeSlug && (subject || keyword)), [collegeSlug, subject, keyword]);
+  const canSearch = useMemo(() => Boolean(collegeSlug && term && (subject || keyword)), [collegeSlug, term, subject, keyword]);
 
   async function handleSearch(event: React.FormEvent) {
     event.preventDefault();
     if (!canSearch) return;
     setLoading(true);
     setError(null);
+    setSelected(null);
 
-    const response = await fetch('/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ collegeSlug, term: term || null, subject, number: catalogNumber, keyword })
+    const params = new URLSearchParams({
+      college: collegeSlug,
+      term,
+      ...(subject ? { subject } : {}),
+      ...(catalogNumber ? { number: catalogNumber } : {}),
+      ...(keyword ? { q: keyword } : {})
     });
 
+    const response = await fetch(`/api/search/sections?${params.toString()}`);
     setLoading(false);
 
     if (!response.ok) {
@@ -59,19 +50,24 @@ export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
     setResults(payload.items ?? []);
   }
 
-  async function addWatch(candidate: SectionCandidate) {
+  async function addWatch() {
+    if (!selected) return;
     setLoading(true);
-    const response = await fetch('/api/watchlist', {
+    const response = await fetch('/api/watch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         collegeSlug,
-        term: term || candidate.term || null,
-        subject: candidate.subject || subject || null,
-        catalogNumber: candidate.catalogNumber || catalogNumber || null,
-        sectionLabel: candidate.sectionLabel,
-        sectionId: candidate.sectionId,
-        detailUrl: candidate.detailUrl || null
+        term,
+        subject: selected.subject,
+        catalogNumber: selected.catalogNumber,
+        courseTitle: selected.courseTitle,
+        sectionLabel: selected.sectionLabel,
+        externalSectionId: selected.externalSectionId,
+        externalUrl: selected.externalUrl,
+        seatsAvailable: selected.seatsAvailable,
+        waitlistAvailable: selected.waitlistAvailable,
+        state: selected.state
       })
     });
     setLoading(false);
@@ -88,102 +84,57 @@ export function AddWatchFlow({ colleges }: { colleges: CollegeOption[] }) {
 
   useEffect(() => {
     setResults([]);
+    setSelected(null);
+    setTerm('');
   }, [collegeSlug]);
 
   return (
     <div className="space-y-6">
-      <form onSubmit={handleSearch} className="card space-y-4 p-6">
+      <div className="card space-y-4 p-6">
         <div className="grid gap-4 md:grid-cols-2">
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">College</label>
-            <select
-              className="input mt-2"
-              value={collegeSlug}
-              onChange={(event) => setCollegeSlug(event.target.value)}
-            >
-              {colleges.map((college) => (
-                <option key={college.id} value={college.slug}>
-                  {college.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Term (optional)</label>
-            <input
-              className="input mt-2"
-              placeholder="e.g. 2026SP"
-              value={term}
-              onChange={(event) => setTerm(event.target.value)}
-            />
-          </div>
+          <CollegeSelect value={collegeSlug} options={colleges} onChange={setCollegeSlug} />
+          <TermSelect collegeSlug={collegeSlug} value={term} onChange={setTerm} />
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Subject</label>
-            <input
-              className="input mt-2"
-              placeholder="e.g. MATH"
-              value={subject}
-              onChange={(event) => setSubject(event.target.value.toUpperCase())}
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Number</label>
-            <input
-              className="input mt-2"
-              placeholder="e.g. 1A"
-              value={catalogNumber}
-              onChange={(event) => setCatalogNumber(event.target.value.toUpperCase())}
-            />
-          </div>
-          <div>
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">Keyword (optional)</label>
-            <input
-              className="input mt-2"
-              placeholder="e.g. Calculus"
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-            />
-          </div>
-        </div>
-        <button className="btn-primary" disabled={!canSearch || loading}>
-          {loading ? 'Searching…' : 'Search sections'}
-        </button>
+        <SectionSearchForm
+          subject={subject}
+          number={catalogNumber}
+          keyword={keyword}
+          onSubjectChange={setSubject}
+          onNumberChange={setCatalogNumber}
+          onKeywordChange={setKeyword}
+          onSubmit={handleSearch}
+          loading={loading}
+        />
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      </form>
-
-      <div className="space-y-3">
-        {results.length === 0 ? (
-          <div className="card p-6 text-sm text-slate-600">
-            Search to see available sections. If no results appear, double-check the subject or try a keyword.
-          </div>
-        ) : (
-          results.map((item) => (
-            <div key={item.sectionId} className="card p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold">{item.sectionLabel}</h3>
-                  <p className="text-sm text-slate-600">
-                    {item.subject} {item.catalogNumber} {item.title ? `· ${item.title}` : ''}
-                  </p>
-                  <p className="text-xs text-slate-500">Term: {item.term ?? term ?? 'Current term'}</p>
-                </div>
-                <div className="text-right text-xs text-slate-500">
-                  <p>Seats: {item.seats ?? 'Unknown'}</p>
-                  <p>Waitlist: {item.waitlist ?? 'Unknown'}</p>
-                  <p>Status: {item.state ?? 'unknown'}</p>
-                </div>
-              </div>
-              <div className="mt-4">
-                <button className="btn-primary" onClick={() => addWatch(item)} disabled={loading}>
-                  Watch this section
-                </button>
-              </div>
-            </div>
-          ))
-        )}
       </div>
+
+      {!selected ? (
+        <SectionResultsList items={results} onSelect={setSelected} />
+      ) : (
+        <div className="card p-6">
+          <h3 className="text-lg font-semibold">Confirm watch</h3>
+          <p className="mt-2 text-sm text-slate-600">
+            We will monitor this section and email you the moment seats open.
+          </p>
+          <div className="mt-4 space-y-2 text-sm text-slate-600">
+            <p>College: {colleges.find((c) => c.slug === collegeSlug)?.name}</p>
+            <p>Term: {term}</p>
+            <p>
+              Course: {selected.subject} {selected.catalogNumber} {selected.courseTitle ? `· ${selected.courseTitle}` : ''}
+            </p>
+            <p>Section: {selected.sectionLabel ?? selected.externalSectionId}</p>
+            <p>Current seats: {selected.seatsAvailable ?? 'Unknown'}</p>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button className="btn-primary" onClick={addWatch} disabled={loading}>
+              Start watching
+            </button>
+            <button className="btn-outline" onClick={() => setSelected(null)} disabled={loading}>
+              Back to results
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

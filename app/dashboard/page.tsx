@@ -42,11 +42,12 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <div className="space-y-6 pt-6">
+    <div className="space-y-8 pt-8 fade-in">
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-sm text-slate-600">Monitor seat availability across your selected classes.</p>
+          <h1 className="text-4xl font-bold text-slate-800">Dashboard</h1>
+          <p className="text-base text-slate-600 mt-1">Monitor seat availability across your selected classes</p>
         </div>
         <div className="flex items-center gap-3">
           <Link href="/watch/new" className="btn-primary">
@@ -56,24 +57,43 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {hasFailures ? (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-          Some checks are failing; see details in the watch list or admin diagnostics.
+      {/* Failure Alert */}
+      {hasFailures && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-800 flex items-start gap-3">
+          <span className="text-lg">⚠️</span>
+          <div>
+            <strong className="font-semibold">Some checks are failing</strong>
+            <p className="mt-1 text-rose-700">See details in the watch list or admin diagnostics.</p>
+          </div>
         </div>
-      ) : null}
+      )}
 
+      {/* Watchlist */}
       <WatchlistTable items={viewItems} />
 
-      <div className="card p-6">
-        <h2 className="text-lg font-semibold">Recent alerts</h2>
+      {/* Recent Alerts */}
+      <div className="card p-7 border border-emerald-100">
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">📬</span>
+          <h2 className="text-xl font-bold text-slate-800">Recent Alerts</h2>
+        </div>
         {recentAlerts.length === 0 ? (
-          <p className="mt-2 text-sm text-slate-600">No alerts yet.</p>
+          <p className="text-sm text-slate-500 py-4 text-center">
+            No alerts yet. We'll notify you when seats become available.
+          </p>
         ) : (
-          <ul className="mt-3 space-y-2 text-sm text-slate-600">
+          <ul className="space-y-3">
             {recentAlerts.map((alert) => (
-              <li key={alert.id}>
-                {alert.watchItem.college.name} · {alert.watchItem.sectionLabel ?? alert.watchItem.externalSectionId} ·{' '}
-                {alert.type.replace(/_/g, ' ')} · {alert.createdAt.toLocaleString()}
+              <li key={alert.id} className="flex items-start gap-3 text-sm border-b border-slate-100 last:border-0 pb-3 last:pb-0">
+                <span className="text-lg">✉️</span>
+                <div className="flex-1">
+                  <p className="font-medium text-slate-800">
+                    {alert.watchItem.college.name} · {alert.watchItem.sectionLabel ?? alert.watchItem.externalSectionId}
+                  </p>
+                  <p className="text-slate-600 mt-1">
+                    {alert.type.replace(/_/g, ' ')} · {alert.createdAt.toLocaleString()}
+                  </p>
+                </div>
               </li>
             ))}
           </ul>

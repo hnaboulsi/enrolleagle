@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export function LogoutButton() {
+export function LogoutButton({ variant = 'button' }: { variant?: 'button' | 'link' }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -13,6 +13,18 @@ export function LogoutButton() {
     setLoading(false);
     router.push('/');
     router.refresh();
+  }
+
+  if (variant === 'link') {
+    return (
+      <button
+        className="text-sm font-semibold text-slate-700 transition-colors hover:text-emerald-700 disabled:opacity-50"
+        onClick={handleLogout}
+        disabled={loading}
+      >
+        {loading ? 'Logging out…' : 'Log out'}
+      </button>
+    );
   }
 
   return (

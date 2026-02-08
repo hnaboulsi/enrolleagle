@@ -1,17 +1,26 @@
 import Link from 'next/link';
 import { AuthForm } from '@/components/AuthForm';
+import { redirect } from 'next/navigation';
+import { getCurrentUser } from '@/src/lib/auth';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const user = await getCurrentUser();
+  if (user) {
+    redirect('/dashboard');
+  }
+
   return (
-    <div className="mx-auto mt-10 max-w-md space-y-6">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Welcome back</h1>
-        <p className="text-sm text-slate-600">Log in to manage your watchlist.</p>
+    <div className="mx-auto mt-12 max-w-md space-y-8 fade-in">
+      <div className="space-y-3 text-center">
+        <h1 className="text-4xl font-bold text-slate-800">Welcome back</h1>
+        <p className="text-base text-slate-600">Log in to manage your watchlist and get class alerts.</p>
       </div>
-      <AuthForm mode="login" />
+      <div className="card p-8 shadow-lg border border-emerald-100">
+        <AuthForm mode="login" />
+      </div>
       <p className="text-center text-sm text-slate-600">
         New here?{' '}
-        <Link href="/signup" className="font-semibold text-emerald-700">
+        <Link href="/signup" className="font-semibold text-emerald-700 hover:text-emerald-800 transition-colors">
           Create an account
         </Link>
       </p>

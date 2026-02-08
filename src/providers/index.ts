@@ -14,7 +14,8 @@ const providers: Record<string, AvailabilityProvider> = {
 };
 
 /** Colleges whose schedule pages are confirmed to work with our parsers. */
-export const SUPPORTED_SLUGS = new Set(['foothill', 'deanza']);
+// Note: De Anza is temporarily blocked by Cloudflare protection (403)
+export const SUPPORTED_SLUGS = new Set(['foothill']);
 
 export function isSupported(slug: string) {
   return SUPPORTED_SLUGS.has(slug);

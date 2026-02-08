@@ -32,12 +32,25 @@ function parseState(line: string): ProviderState | null {
 }
 
 function parseSeatLine(line: string) {
+  // Don't match waitlist lines
+  if (/waitlist/i.test(line)) return null;
+
+  // Support both "Seats Available: X of Y" and "X of Y seats open" formats
+  if (/Seats Available:/i.test(line)) {
+    const match = line.match(/Seats Available:\s*(\d+)\s+of\s+(\d+)/i);
+    if (match) return safeNumber(match[1]);
+  }
   const match = line.match(/(\d+)\s+of\s+(\d+)\s+seats\s+open/i);
   if (!match) return null;
   return safeNumber(match[1]);
 }
 
 function parseWaitlistLine(line: string) {
+  // Support both "Waitlist Seats Available: X of Y" and "X of Y waitlist seats open" formats
+  if (/Waitlist.*Available:/i.test(line)) {
+    const match = line.match(/Waitlist.*Available:\s*(\d+)\s+of\s+(\d+)/i);
+    if (match) return safeNumber(match[1]);
+  }
   const match = line.match(/(\d+)\s+of\s+(\d+)\s+waitlist\s+seats\s+open/i);
   if (!match) return null;
   return safeNumber(match[1]);

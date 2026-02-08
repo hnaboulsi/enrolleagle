@@ -1,5 +1,4 @@
 import { getIronSession } from 'iron-session';
-import type { IronSessionOptions } from 'iron-session';
 import { cookies } from 'next/headers';
 import { env } from '@/src/lib/env';
 import { prisma } from '@/src/lib/prisma';
@@ -9,19 +8,17 @@ export type SessionData = {
   email?: string;
 };
 
-const sessionOptions: IronSessionOptions = {
-  cookieName: 'adddropper_session',
-  password: env.SESSION_SECRET,
-  cookieOptions: {
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    httpOnly: true,
-    path: '/'
-  }
-};
-
 export async function getSession() {
-  return getIronSession<SessionData>(cookies(), sessionOptions);
+  return getIronSession<SessionData>(cookies(), {
+    cookieName: 'adddropper_session',
+    password: env.SESSION_SECRET,
+    cookieOptions: {
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      httpOnly: true,
+      path: '/'
+    }
+  });
 }
 
 export async function setSession(user: { id: string; email: string }) {

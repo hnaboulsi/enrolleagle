@@ -28,6 +28,26 @@ export class DeAnzaProvider implements AvailabilityProvider {
     const cached = getCached<{ id: string; label: string }[]>(cacheKey);
     if (cached) return cached;
 
+    // Try to fetch actual term name from a department page
+    try {
+      const response = await fetchWithTimeout(`${BASE_URL}/math/schedule.html`);
+      if (response.ok) {
+        const html = await response.text();
+        // Look for pattern like "2026 Spring Schedule"
+        const match = html.match(/(\d{4})\s+(Spring|Summer|Fall|Winter)\s+Schedule/i);
+        if (match) {
+          const year = match[1];
+          const quarter = match[2];
+          const label = `${quarter} ${year}`;
+          const terms = [{ id: 'current', label }];
+          setCached(cacheKey, terms, 6 * 60 * 60 * 1000);
+          return terms;
+        }
+      }
+    } catch (error) {
+      // Fall back to generic label if fetch fails
+    }
+
     const terms = [{ id: 'current', label: 'Current Term' }];
     setCached(cacheKey, terms, 6 * 60 * 60 * 1000);
     return terms;

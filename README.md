@@ -1,96 +1,153 @@
-# AddDropper
+# EnrollEagle
 
-Real-time seat-availability alerts for select California Community Colleges. AddDropper watches class sections and emails you the moment seats open—no auto-enroll, no credentials required.
+EnrollEagle is a community college course seat tracker.
 
-## Stack
-- Next.js (App Router) + TypeScript + Tailwind
-- Postgres + Prisma
-- Background jobs with pg-boss
-- Email via SMTP (dev) or SendGrid (prod)
+It monitors seat availability for configured course sections and sends email notifications when seats open.
+
+## Architecture
+- Backend: Flask REST API (`apps/api`)
+- Frontend: React + Vite + TypeScript (`apps/web`)
+- DB: PostgreSQL
+- ORM + migrations: SQLAlchemy + Alembic
+- Provider package: `packages/providers` (`httpx` + `selectolax`)
+- Polling: stateless tick endpoint (`GET /cron/tick`)
+- Email adapters: AWS SES + Resend
+- Docker-first deploy path with AWS phase and Vercel migration phase
+
+## Repository Layout
+- `apps/api`: Flask API, auth, watches, cron tick, migrations, tests
+- `apps/web`: React SPA (login/dashboard/add watch)
+- `packages/providers`: provider adapter package + parser fixtures/tests
+- `infra`: docker-compose + AWS/Vercel deployment docs
 
 ## Local Setup
 
-1) Install dependencies
+### 1) Start Postgres
 ```bash
-npm install
+cd infra
+docker compose up -d db
 ```
 
-2) Configure environment
+### 2) API setup
 ```bash
+cd ../apps/api
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+pip install -e ../../packages/providers
 cp .env.example .env
 ```
-Update `DATABASE_URL`, `SESSION_SECRET`, and SMTP/SENDGRID settings.
 
-3) Start Postgres (Docker)
+Update at least:
+- `DATABASE_URL`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `GOOGLE_REDIRECT_URI`
+- `SESSION_SECRET`
+- `FRONTEND_URL`
+- `CRON_SECRET`
+
+### 3) Run migrations
 ```bash
-docker-compose up -d db
+cd apps/api
+source .venv/bin/activate
+alembic upgrade head
 ```
 
-4) Run migrations + seed
+### 4) Start API
 ```bash
-npm run prisma:migrate
-npm run prisma:seed
+cd apps/api
+source .venv/bin/activate
+flask --app wsgi:app --debug run --port 5000
 ```
 
-5) Run the web app
+### 5) Start frontend
 ```bash
+cd apps/web
+cp .env.example .env
+npm install
 npm run dev
 ```
 
-6) Run the worker (separate terminal)
+Frontend: `http://localhost:5173`
+API: `http://localhost:5000`
+
+## Google OAuth Setup
+Create an OAuth 2.0 Client ID (Web application) in Google Cloud Console.
+
+### Authorized redirect URIs
+- Local API callback:
+  - `http://localhost:5000/auth/google/callback`
+- AWS API callback:
+  - `https://<aws-api-domain>/auth/google/callback`
+- Vercel API callback:
+  - `https://<vercel-api-domain>/auth/google/callback`
+
+### Authorized JavaScript origins
+- `http://localhost:5173`
+- `https://<aws-frontend-domain>`
+- `https://<vercel-frontend-domain>`
+
+## API Endpoints
+- `GET /auth/google/start`
+- `GET /auth/google/callback`
+- `POST /auth/logout`
+- `GET /me`
+- `GET /watches`
+- `POST /watches`
+- `PATCH /watches/{id}`
+- `DELETE /watches/{id}`
+- `GET /cron/tick?token=...`
+- `POST /report`
+
+## Polling Model (Tick-only)
+No always-on worker is required.
+
+Run `/cron/tick` from a scheduler:
+- AWS: EventBridge Scheduler
+- Vercel: Vercel Cron
+
+The tick route:
+- fetches due watches with row locking
+- deduplicates requests by `(provider, fetch_key)`
+- records snapshots
+- triggers deduped email notifications
+- updates next run timestamps
+
+## Supported Providers (v1)
+- `foothill`: public HTML parser
+- `socccd`: SmartSchedule parser (IVC + Saddleback via `campus_code`)
+- `deanza`: URL-based best effort parser
+
+Scaffolded as unsupported:
+- `smc`
+- `sdccd`
+- `vsb4cd`
+
+## Anti-bot / Cloudflare Policy
+EnrollEagle does not implement bypass/evasion.
+
+When block/challenge responses are detected (403/429 or challenge markers), status is set to `BLOCKED` with a reason.
+
+## Browser Reporter (optional scaffold)
+`POST /report` accepts browser-provided seat counts with HMAC signature tied to the watch.
+
+This enables user-side reporting for sites where server-side scraping is blocked, without bypass techniques.
+
+## Testing
+### Provider package tests
 ```bash
-npm run worker:dev
+cd packages/providers
+python3 -m pytest
 ```
 
-## How It Works
-- Users search for a class section and add it to their watchlist.
-- A worker polls official schedule endpoints every 90 seconds (with backoff on failure).
-- When seats open, an email alert is sent once (deduped).
-
-## Providers
-Adapters live in `src/providers/adapters/` and are isolated by college. The base URLs and parsing logic are intentionally easy to replace if endpoints change.
-
-### Ethical Scraping
-- Respect each college’s terms of use.
-- Keep polling frequency reasonable and use backoff on failures.
-- Identify your bot via a clear user agent.
-
-## Email Configuration
-Choose one provider:
-
-### SMTP (default)
-```
-EMAIL_PROVIDER=smtp
-SMTP_HOST=...
-SMTP_PORT=587
-SMTP_USER=...
-SMTP_PASS=...
-SMTP_FROM="AddDropper <no-reply@adddropper.com>"
+### API tests
+```bash
+cd apps/api
+source .venv/bin/activate
+pytest
 ```
 
-### SendGrid (optional)
-```
-EMAIL_PROVIDER=sendgrid
-SENDGRID_API_KEY=...
-```
-
-## Deployment
-
-### Vercel (web) + Render/Fly/Railway (worker)
-- Deploy the Next.js app to Vercel.
-- Deploy a separate worker service using `npm run worker`.
-- Ensure both environments share the same `DATABASE_URL` and `SESSION_SECRET`.
-
-### Container deploy
-Use the provided `Dockerfile` and run two containers (web + worker) with the same image.
-
-## Admin Diagnostics
-- `/admin` is protected by `ADMIN_EMAILS`.
-- Shows provider errors, queue health, and failing watch items.
-
-## Tests
-- Provider parsing tests: `src/providers/__tests__/`.
-- Polling integration test: `tests/jobs/polling.test.ts`.
-
-## Migrations
-This repo includes a rebuild migration under `prisma/migrations/20260207120000_adddropper_rebuild`. If you’re starting from scratch, run `npm run prisma:migrate` to apply it.
+## Deploy Guides
+- AWS Phase 1: `infra/aws/DEPLOY_AWS.md`
+- Vercel Phase 2 migration: `infra/vercel/DEPLOY_VERCEL.md`

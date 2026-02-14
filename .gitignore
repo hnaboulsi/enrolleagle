@@ -1,9 +1,26 @@
-node_modules
-.next
-.env
-.env.local
-.env.*.local
+# General
 .DS_Store
-prisma/dev.db
-.vercel
-.env*.local
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+dist/
+
+# Env files
+.env
+.env.*
+!*.env.example
+
+# Build/cache
+coverage/
+*.sqlite3
+
+# Legacy archive created during rebuild
+_legacy/

@@ -1,0 +1,170 @@
+:root {
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  color: #0f172a;
+  background: radial-gradient(circle at top right, #fef3c7, #f8fafc 45%), #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+button,
+.button-link {
+  background: #14532d;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button:hover,
+.button-link:hover {
+  background: #166534;
+}
+
+button.danger {
+  background: #b91c1c;
+}
+
+button.danger:hover {
+  background: #991b1b;
+}
+
+input,
+select {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+}
+
+.page-shell {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.panel {
+  background: #ffffffd9;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.06);
+}
+
+.panel.narrow {
+  width: min(420px, 90vw);
+}
+
+.center-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.watch-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.watch-table th,
+.watch-table td {
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  padding: 10px;
+  vertical-align: top;
+}
+
+.actions-inline {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.subtle {
+  color: #475569;
+  font-size: 13px;
+}
+
+.error {
+  background: #fee2e2;
+  color: #7f1d1d;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.pill {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pill-open,
+.pill-waitlist {
+  background: #dcfce7;
+  color: #14532d;
+}
+
+.pill-blocked,
+.pill-unsupported {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pill-full,
+.pill-closed,
+.pill-unknown,
+.pill-paused,
+.pill-deleted {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.checkbox-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .watch-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .topbar {
+    flex-direction: column;
+  }
+}

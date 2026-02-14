@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: enrolleagle
+    ports:
+      - '5432:5432'
+    volumes:
+      - enrolleagle_db:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: ..
+      dockerfile: apps/api/Dockerfile
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/enrolleagle
+      FRONTEND_URL: http://localhost:5173
+      GOOGLE_CLIENT_ID: replace-me
+      GOOGLE_CLIENT_SECRET: replace-me
+      GOOGLE_REDIRECT_URI: http://localhost:5000/auth/google/callback
+      SESSION_SECRET: replace-with-long-random-secret
+      CRON_SECRET: replace-with-cron-secret
+      EMAIL_PROVIDER: ses
+      SES_FROM_EMAIL: alerts@example.com
+      REPORT_HMAC_SECRET: replace-with-report-secret
+      COOKIE_SECURE: 'false'
+    ports:
+      - '5000:5000'
+
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost:5000
+    depends_on:
+      - api
+    ports:
+      - '5173:80'
+
+volumes:
+  enrolleagle_db:

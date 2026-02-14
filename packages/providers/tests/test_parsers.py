@@ -53,3 +53,18 @@ def test_build_watch_soccd_payload() -> None:
     assert watch["section_ref"] == "33445"
     assert watch["term_ref"] == "2026SP"
     assert watch["fetch_key"].startswith("socccd:ivc:2026SP")
+
+
+def test_build_watch_requires_deanza_url() -> None:
+    try:
+        build_watch_from_user_input(
+            {
+                "provider": "deanza",
+                "crn": "12345",
+                "term_ref": "2026SP",
+            }
+        )
+    except ValueError as exc:
+        assert "requires pasted_url" in str(exc)
+    else:  # pragma: no cover
+        raise AssertionError("Expected ValueError for missing deanza pasted_url")

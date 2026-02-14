@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from urllib.parse import urlparse
 
 from selectolax.parser import HTMLParser
 
@@ -83,7 +84,12 @@ class SocccdProvider:
         )
 
         response = fetch_url(target_url)
-        blocked, reason = detect_blocked_response(response.status_code, response.text, expected_tokens=("seats", "open"))
+        blocked, reason = detect_blocked_response(
+            response.status_code,
+            response.text,
+            expected_tokens=("seats", "open"),
+            host=urlparse(target_url).netloc,
+        )
         if blocked:
             return SeatStatus(None, None, "BLOCKED", target_url, response.text[:500], reason)
 
@@ -95,6 +101,7 @@ class SocccdProvider:
                 response.status_code,
                 response.text,
                 expected_tokens=("open seats", "class number"),
+                host=urlparse(target_url).netloc,
             )
             if blocked_like:
                 parsed.status = "BLOCKED"

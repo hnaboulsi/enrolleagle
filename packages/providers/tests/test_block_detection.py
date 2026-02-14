@@ -2,9 +2,10 @@ from enrolleagle_providers.block_detection import detect_blocked_response
 
 
 def test_detect_blocked_by_status_code() -> None:
-    blocked, reason = detect_blocked_response(403, "Forbidden")
+    blocked, reason = detect_blocked_response(403, "Forbidden", host="example.edu")
     assert blocked is True
     assert "403" in (reason or "")
+    assert "example.edu" in (reason or "")
 
 
 def test_detect_blocked_by_challenge_marker() -> None:

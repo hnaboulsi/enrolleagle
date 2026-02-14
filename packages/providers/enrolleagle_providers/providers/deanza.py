@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from urllib.parse import urlparse
+
 from enrolleagle_providers.block_detection import detect_blocked_response
 from enrolleagle_providers.http import fetch_url
 from enrolleagle_providers.providers.foothill import parse_foothill_html
@@ -19,7 +21,12 @@ class DeAnzaProvider:
             return SeatStatus(None, None, "UNSUPPORTED", source_url, None, "section_ref is required")
 
         response = fetch_url(source_url)
-        blocked, reason = detect_blocked_response(response.status_code, response.text, expected_tokens=("seats", "section"))
+        blocked, reason = detect_blocked_response(
+            response.status_code,
+            response.text,
+            expected_tokens=("seats", "section"),
+            host=urlparse(source_url).netloc,
+        )
         if blocked:
             return SeatStatus(None, None, "BLOCKED", source_url, response.text[:500], reason)
 
@@ -31,6 +38,7 @@ class DeAnzaProvider:
                 response.status_code,
                 response.text,
                 expected_tokens=("seats", "waitlist"),
+                host=urlparse(source_url).netloc,
             )
             if blocked_like:
                 parsed.status = "BLOCKED"

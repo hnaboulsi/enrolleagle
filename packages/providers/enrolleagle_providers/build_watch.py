@@ -50,8 +50,10 @@ def build_watch_from_user_input(payload: dict) -> dict:
 
     if provider in {"foothill", "deanza"}:
         section_ref = _require_identifier(payload)
+        if provider == "deanza" and not source_url:
+            raise ValueError("deanza requires pasted_url in v1")
         if source_url:
-            fetch_key = f"{provider}:{_url_key(source_url)}"
+            fetch_key = f"{provider}:{term_ref}:{section_ref}:{_url_key(source_url)}"
         else:
             fetch_key = f"{provider}:{term_ref}:{section_ref}"
         return {
@@ -64,7 +66,7 @@ def build_watch_from_user_input(payload: dict) -> dict:
     section_ref = str(payload.get("class_number") or payload.get("crn") or "unsupported").strip()
     if not section_ref and not source_url:
         raise ValueError("Provide at least one identifier for unsupported provider scaffolds.")
-    fetch_key = f"{provider}:{_url_key(source_url) if source_url else section_ref}"
+    fetch_key = f"{provider}:{term_ref}:{section_ref}:{_url_key(source_url) if source_url else 'nosrc'}"
     return {
         "section_ref": section_ref or "unsupported",
         "term_ref": term_ref,

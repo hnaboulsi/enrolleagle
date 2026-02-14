@@ -72,21 +72,26 @@ def google_callback():
     config: AppConfig = current_app.config["APP_CONFIG"]
     db = g.db
 
+    def _callback_error(message: str, status_code: int):
+        response = jsonify({"error": message})
+        clear_oauth_state_cookie(response, config)
+        return response, status_code
+
     code = request.args.get("code")
     state = request.args.get("state")
 
     if not code or not state:
-        return jsonify({"error": "Missing code/state"}), 400
+        return _callback_error("Missing code/state", 400)
 
     if not validate_oauth_state(config, state):
-        return jsonify({"error": "Invalid OAuth state"}), 400
+        return _callback_error("Invalid OAuth state", 400)
 
     try:
         tokens = exchange_code_for_tokens(config, code)
         id_token_value = tokens["id_token"]
         claims = verify_google_id_token(id_token_value, config.google_client_id)
     except Exception as exc:
-        return jsonify({"error": f"Google OAuth failed: {exc}"}), 400
+        return _callback_error(f"Google OAuth failed: {exc}", 400)
 
     google_sub = str(claims.get("sub") or "").strip()
     email = str(claims.get("email") or "").strip().lower()
@@ -94,9 +99,9 @@ def google_callback():
     name = str(claims.get("name") or "").strip() or None
 
     if not google_sub or not email:
-        return jsonify({"error": "Google identity missing required fields"}), 400
+        return _callback_error("Google identity missing required fields", 400)
     if not email_verified:
-        return jsonify({"error": "Google email is not verified"}), 400
+        return _callback_error("Google email is not verified", 400)
 
     existing = db.execute(
         select(User).where(or_(User.google_sub == google_sub, User.email == email))

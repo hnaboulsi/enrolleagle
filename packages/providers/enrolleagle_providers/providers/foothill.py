@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from urllib.parse import urlparse
 
 from selectolax.parser import HTMLParser
 
@@ -82,7 +83,12 @@ class FoothillProvider:
             return SeatStatus(None, None, "UNSUPPORTED", None, None, "source_url is required for v1 foothill parser")
 
         response = fetch_url(source_url)
-        blocked, reason = detect_blocked_response(response.status_code, response.text, expected_tokens=("seats", "open"))
+        blocked, reason = detect_blocked_response(
+            response.status_code,
+            response.text,
+            expected_tokens=("seats", "open"),
+            host=urlparse(source_url).netloc,
+        )
         if blocked:
             return SeatStatus(None, None, "BLOCKED", source_url, response.text[:500], reason)
 
@@ -94,6 +100,7 @@ class FoothillProvider:
                 response.status_code,
                 response.text,
                 expected_tokens=("seats", "waitlist"),
+                host=urlparse(source_url).netloc,
             )
             if blocked_like:
                 parsed.status = "BLOCKED"

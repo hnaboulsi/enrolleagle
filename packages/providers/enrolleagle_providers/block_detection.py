@@ -21,9 +21,11 @@ def detect_blocked_response(
     status_code: int,
     html: str,
     expected_tokens: Iterable[str] | None = None,
+    host: str | None = None,
 ) -> tuple[bool, str | None]:
     if status_code in {403, 429}:
-        return True, f"Blocked by host with HTTP {status_code}"
+        host_label = host or "host"
+        return True, f"Blocked by {host_label} with HTTP {status_code}"
 
     lower = html.lower()
     for marker in BLOCK_MARKERS:

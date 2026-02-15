@@ -1,0 +1,52 @@
+{
+  "family": "enrolleagle-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/enrolleagle-task-role",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/enrolleagle-api:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 3,
+        "startPeriod": 15
+      },
+      "environment": [
+        { "name": "DATABASE_URL",         "value": "REPLACE_ME" },
+        { "name": "FRONTEND_URL",         "value": "https://enrolleagle.example.com" },
+        { "name": "GOOGLE_CLIENT_ID",     "value": "REPLACE_ME" },
+        { "name": "GOOGLE_CLIENT_SECRET", "value": "REPLACE_ME" },
+        { "name": "GOOGLE_REDIRECT_URI",  "value": "https://api.enrolleagle.example.com/auth/google/callback" },
+        { "name": "SESSION_SECRET",       "value": "REPLACE_ME" },
+        { "name": "CRON_SECRET",          "value": "REPLACE_ME" },
+        { "name": "EMAIL_PROVIDER",       "value": "ses" },
+        { "name": "SES_FROM_EMAIL",       "value": "alerts@enrolleagle.example.com" },
+        { "name": "REPORT_HMAC_SECRET",   "value": "REPLACE_ME" },
+        { "name": "COOKIE_SECURE",        "value": "true" },
+        { "name": "SESSION_SAME_SITE",    "value": "None" },
+        { "name": "ENV",                  "value": "production" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/enrolleagle-api",
+          "awslogs-region": "<REGION>",
+          "awslogs-stream-prefix": "api"
+        }
+      }
+    }
+  ]
+}

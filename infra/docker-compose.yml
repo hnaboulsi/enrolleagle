@@ -5,45 +5,58 @@ services:
     image: postgres:16
     restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: enrolleagle
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-enrolleagle}
     ports:
       - '5432:5432'
     volumes:
       - enrolleagle_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-enrolleagle}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   api:
     build:
       context: ..
       dockerfile: apps/api/Dockerfile
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    env_file:
+      - ../.env
     environment:
-      DATABASE_URL: postgresql+psycopg://postgres:postgres@db:5432/enrolleagle
-      FRONTEND_URL: http://localhost:5173
-      GOOGLE_CLIENT_ID: replace-me
-      GOOGLE_CLIENT_SECRET: replace-me
-      GOOGLE_REDIRECT_URI: http://localhost:5000/auth/google/callback
-      SESSION_SECRET: replace-with-long-random-secret
-      CRON_SECRET: replace-with-cron-secret
-      EMAIL_PROVIDER: ses
-      SES_FROM_EMAIL: alerts@example.com
-      REPORT_HMAC_SECRET: replace-with-report-secret
-      COOKIE_SECURE: 'false'
+      # Override DATABASE_URL to point at the compose db service
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-enrolleagle}
     ports:
       - '5000:5000'
+    volumes:
+      - ../.cursor:/app/.cursor
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:5000/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
 
   web:
     build:
       context: ..
       dockerfile: apps/web/Dockerfile
       args:
-        VITE_API_BASE_URL: http://localhost:5000
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5000}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     ports:
       - '5173:80'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:80']
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
 volumes:
   enrolleagle_db:

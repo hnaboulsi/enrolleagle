@@ -59,11 +59,7 @@ def create_watch():
     config = current_app.config["APP_CONFIG"]
     payload = request.get_json(silent=True) or {}
 
-    try:
-        parsed = parse_watch_create_payload(payload)
-    except ValidationError as exc:
-        return jsonify({"error": str(exc)}), 400
-
+    # Check active watch limit
     active_count = g.db.execute(
         select(func.count(Watch.id)).where(
             Watch.user_id == g.current_user.id,
@@ -72,6 +68,47 @@ def create_watch():
     ).scalar_one()
     if active_count >= config.max_active_watches:
         return jsonify({"error": f"Active watch limit reached ({config.max_active_watches})"}), 400
+
+    # ----- New path: create from search results (section_id) -----
+    section_id = payload.get("section_id")
+    school_id = payload.get("school_id")
+    if section_id and school_id:
+        term_ref = payload.get("term_ref", "current")
+        notify_on_waitlist = bool(payload.get("notify_on_waitlist", False))
+        cadence_seconds = max(120, int(payload.get("cadence_seconds", 120)))
+
+        # section_id format: "CRN:12345"
+        section_ref = section_id.replace("CRN:", "").strip()
+        provider = school_id  # school_id maps to provider key
+        fetch_key = f"{provider}:{term_ref}:{section_ref}"
+        source_url = payload.get("source_url")
+
+        watch = Watch(
+            user_id=g.current_user.id,
+            provider=provider,
+            section_ref=section_ref,
+            term_ref=term_ref,
+            fetch_key=fetch_key,
+            source_url=source_url,
+            campus_code=payload.get("campus_code"),
+            notify_on_waitlist=notify_on_waitlist,
+            cadence_seconds=cadence_seconds,
+            last_status="UNKNOWN",
+            next_run_at=datetime.now(timezone.utc),
+            is_active=True,
+            report_hmac_salt=secrets.token_hex(16),
+        )
+
+        g.db.add(watch)
+        g.db.commit()
+        g.db.refresh(watch)
+        return jsonify(_watch_to_dict(watch)), 201
+
+    # ----- Legacy path: create from CRN/URL -----
+    try:
+        parsed = parse_watch_create_payload(payload)
+    except ValidationError as exc:
+        return jsonify({"error": str(exc)}), 400
 
     try:
         built = build_watch_from_user_input(

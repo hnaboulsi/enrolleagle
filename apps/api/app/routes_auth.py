@@ -124,6 +124,34 @@ def google_callback():
     return response
 
 
+@bp.post("/dev/login")
+def dev_login():
+    """Instant login for local development — skips Google OAuth entirely."""
+    config: AppConfig = current_app.config["APP_CONFIG"]
+
+    if config.environment == "production":
+        return jsonify({"error": "Dev login is disabled in production"}), 403
+
+    db = g.db
+    email = "dev@enrolleagle.local"
+    google_sub = "dev-local-000"
+
+    existing = db.execute(
+        select(User).where(User.email == email)
+    ).scalars().first()
+
+    if existing is None:
+        user = User(email=email, google_sub=google_sub, name="Local Dev User")
+        db.add(user)
+        db.commit()
+    else:
+        user = existing
+
+    response = jsonify({"ok": True, "email": user.email, "name": user.name})
+    set_session_cookie(response, config, user)
+    return response
+
+
 @bp.post("/logout")
 def logout():
     config: AppConfig = current_app.config["APP_CONFIG"]

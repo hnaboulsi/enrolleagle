@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Visual Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: system-ui, sans-serif;
+            background: #f0f0f0;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-box h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .success { color: #22c55e; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+        button {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #059669;
+        }
+        #console-log {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .iframe-container {
+            border: 3px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        iframe {
+            width: 100%;
+            height: 700px;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔬 EnrollEagle Visual Test</h1>
+    
+    <div class="test-box">
+        <h3>📋 Quick Actions</h3>
+        <button onclick="inspectApp()">🔍 Inspect App iframe</button>
+        <button onclick="testStyles()">🎨 Test TailwindCSS</button>
+        <button onclick="checkElements()">📱 Check Elements</button>
+        <button onclick="copyConsole()">📋 Copy Console Log</button>
+        <button onclick="location.reload()">🔄 Refresh Page</button>
+    </div>
+
+    <div class="test-box">
+        <h3>📊 Test Results</h3>
+        <div id="results">Click a button above to run tests...</div>
+    </div>
+
+    <div class="test-box">
+        <h3>📜 Console Output</h3>
+        <div id="console-log">Waiting for tests...</div>
+    </div>
+
+    <div class="iframe-container">
+        <iframe id="app" src="http://localhost:5173"></iframe>
+    </div>
+
+    <script>
+        const log = (msg, type = 'info') => {
+            const logDiv = document.getElementById('console-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff4444' : type === 'success' ? '#44ff44' : type === 'warning' ? '#ffaa44' : '#00ff00';
+            logDiv.innerHTML += `<span style="color: ${color}">[${timestamp}] ${msg}</span>\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        const results = (html) => {
+            document.getElementById('results').innerHTML = html;
+        };
+
+        // Capture iframe console
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'console') {
+                log(`[APP] ${event.data.message}`, event.data.level);
+            }
+        });
+
+        function inspectApp() {
+            log('Inspecting application iframe...', 'info');
+            try {
+                const iframe = document.getElementById('app');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                const root = iframeDoc.getElementById('root');
+                
+                if (!root) {
+                    log('ERROR: #root element not found!', 'error');
+                    results('<span class="error">❌ #root element not found</span>');
+                    return;
+                }
+
+                const rootHTML = root.innerHTML;
+                const childCount = root.children.length;
+                const visibleText = iframeDoc.body.innerText.trim();
+                
+                log(`Root element found with ${childCount} children`, 'success');
+                log(`Visible text length: ${visibleText.length} chars`, 'info');
+                
+                // Check for specific elements
+                const buttons = iframeDoc.querySelectorAll('button');
+                const links = iframeDoc.querySelectorAll('a');
+                const divs = iframeDoc.querySelectorAll('div');
+                
+                let report = `
+                    <p class="success">✓ #root exists with ${childCount} children</p>
+                    <p>📊 Element counts:</p>
+                    <ul>
+                        <li>Buttons: ${buttons.length}</li>
+                        <li>Links: ${links.length}</li>
+                        <li>Divs: ${divs.length}</li>
+                    </ul>
+                    <p>📝 Visible text (first 500 chars):</p>
+                    <pre style="background: #f5f5f5; padding: 10px; border-radius: 4px; font-size: 11px;">${visibleText.substring(0, 500) || '(none)'}</pre>
+                `;
+
+                if (buttons.length > 0) {
+                    report += '<p>🔘 Button texts:</p><ul>';
+                    buttons.forEach((btn, i) => {
+                        const text = btn.textContent.trim();
+                        const computed = iframe.contentWindow.getComputedStyle(btn);
+                        report += `<li>${i + 1}. "${text}" - display: ${computed.display}, opacity: ${computed.opacity}, color: ${computed.color}</li>`;
+                        log(`Button ${i + 1}: "${text}" - visible: ${computed.display !== 'none' && computed.opacity !== '0'}`, 'info');
+                    });
+                    report += '</ul>';
+                }
+
+                if (childCount > 0) {
+                    const firstChild = root.children[0];
+                    const computed = iframe.contentWindow.getComputedStyle(firstChild);
+                    report += `
+                        <p>🎨 First child computed styles:</p>
+                        <ul>
+                            <li>display: ${computed.display}</li>
+                            <li>opacity: ${computed.opacity}</li>
+                            <li>visibility: ${computed.visibility}</li>
+                            <li>color: ${computed.color}</li>
+                            <li>backgroundColor: ${computed.backgroundColor}</li>
+                            <li>fontSize: ${computed.fontSize}</li>
+                            <li>fontFamily: ${computed.fontFamily}</li>
+                        </ul>
+                    `;
+                    log(`First child styles - display: ${computed.display}, opacity: ${computed.opacity}`, 'info');
+                }
+
+                results(report);
+
+            } catch (err) {
+                log(`ERROR: ${err.message}`, 'error');
+                results(`<span class="error">❌ Error: ${err.message}</span>`);
+            }
+        }
+
+        function testStyles() {
+            log('Testing Tailwind CSS...', 'info');
+            try {
+                const iframe = document.getElementById('app');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                const stylesheetCount = iframeDoc.styleSheets.length;
+                log(`Found ${stylesheetCount} stylesheets`, 'info');
+                
+                let report = `<p>Found ${stylesheetCount} stylesheets</p>`;
+                
+                // Check if any Tailwind classes are working
+                const testDiv = iframeDoc.createElement('div');
+                testDiv.className = 'bg-red-500 text-white p-4';
+                testDiv.textContent = 'Test Element';
+                iframeDoc.body.appendChild(testDiv);
+                
+                const computed = iframe.contentWindow.getComputedStyle(testDiv);
+                const bgColor = computed.backgroundColor;
+                const textColor = computed.color;
+                const padding = computed.padding;
+                
+                testDiv.remove();
+                
+                report += `
+                    <p>🧪 Test div with classes "bg-red-500 text-white p-4":</p>
+                    <ul>
+                        <li>backgroundColor: ${bgColor} ${bgColor.includes('239, 68, 68') || bgColor.includes('rgb(239, 68, 68)') ? '✓' : '❌'}</li>
+                        <li>color: ${textColor} ${textColor.includes('255, 255, 255') || textColor.includes('rgb(255, 255, 255)') ? '✓' : '❌'}</li>
+                        <li>padding: ${padding}</li>
+                    </ul>
+                `;
+                
+                const tailwindWorking = bgColor.includes('239') || bgColor.includes('rgb(239, 68, 68)');
+                
+                if (tailwindWorking) {
+                    log('✓ Tailwind CSS is working!', 'success');
+                    report += '<p class="success">✅ Tailwind CSS appears to be working!</p>';
+                } else {
+                    log('✗ Tailwind CSS may not be working', 'error');
+                    report += '<p class="error">❌ Tailwind CSS may not be applying correctly</p>';
+                }
+                
+                results(report);
+                
+            } catch (err) {
+                log(`ERROR: ${err.message}`, 'error');
+                results(`<span class="error">❌ Error: ${err.message}</span>`);
+            }
+        }
+
+        function checkElements() {
+            log('Checking for login elements...', 'info');
+            try {
+                const iframe = document.getElementById('app');
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                
+                // Look for login-specific elements
+                const devLoginBtn = Array.from(iframeDoc.querySelectorAll('button')).find(btn => 
+                    btn.textContent.includes('Dev Login') || btn.textContent.includes('login')
+                );
+                
+                const googleLink = Array.from(iframeDoc.querySelectorAll('a')).find(a => 
+                    a.textContent.includes('Google') || a.textContent.includes('Sign in')
+                );
+                
+                const titleEl = iframeDoc.querySelector('h1');
+                const svgs = iframeDoc.querySelectorAll('svg');
+                
+                let report = '<h4>🔍 Element Search Results:</h4><ul>';
+                
+                if (devLoginBtn) {
+                    const computed = iframe.contentWindow.getComputedStyle(devLoginBtn);
+                    report += `<li class="success">✓ Found Dev Login button: "${devLoginBtn.textContent.trim()}"<br>
+                        Styles: display: ${computed.display}, opacity: ${computed.opacity}, visibility: ${computed.visibility}</li>`;
+                    log('✓ Found Dev Login button', 'success');
+                } else {
+                    report += '<li class="error">❌ Dev Login button not found</li>';
+                    log('✗ Dev Login button not found', 'error');
+                }
+                
+                if (googleLink) {
+                    report += `<li class="success">✓ Found Google link: "${googleLink.textContent.trim()}"</li>`;
+                    log('✓ Found Google sign-in link', 'success');
+                } else {
+                    report += '<li class="error">❌ Google sign-in link not found</li>';
+                    log('✗ Google sign-in link not found', 'error');
+                }
+                
+                if (titleEl) {
+                    report += `<li class="success">✓ Found title: "${titleEl.textContent.trim()}"</li>`;
+                } else {
+                    report += '<li class="warning">⚠ No h1 title found</li>';
+                }
+                
+                report += `<li>Found ${svgs.length} SVG elements</li>`;
+                
+                if (svgs.length > 0 && !devLoginBtn && !googleLink) {
+                    report += '<li class="warning">⚠ WARNING: SVGs found but no buttons/links - likely a styling issue!</li>';
+                    log('WARNING: SVGs present but buttons missing - styling problem likely', 'warning');
+                }
+                
+                report += '</ul>';
+                results(report);
+                
+            } catch (err) {
+                log(`ERROR: ${err.message}`, 'error');
+                results(`<span class="error">❌ Error: ${err.message}</span>`);
+            }
+        }
+
+        function copyConsole() {
+            const consoleText = document.getElementById('console-log').innerText;
+            navigator.clipboard.writeText(consoleText).then(() => {
+                log('✓ Console log copied to clipboard!', 'success');
+            });
+        }
+
+        // Auto-run inspection after iframe loads
+        const iframe = document.getElementById('app');
+        iframe.addEventListener('load', () => {
+            log('Application iframe loaded', 'success');
+            setTimeout(() => {
+                inspectApp();
+                testStyles();
+                checkElements();
+            }, 1500);
+        });
+
+        log('Diagnostic tool ready. Waiting for iframe to load...', 'info');
+    </script>
+</body>
+</html>

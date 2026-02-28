@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, JSON, String, Text, Uuid, func, text
+from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint, Uuid, func, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -110,3 +110,20 @@ class NotificationLog(Base):
     watch: Mapped[Watch] = relationship(back_populates="notification_logs")
 
     __table_args__ = (Index("ix_notification_logs_watch_sent", "watch_id", "sent_at"),)
+
+
+class CatalogCache(Base):
+    __tablename__ = "catalog_cache"
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    school_id: Mapped[str] = mapped_column(String(64), nullable=False)
+    term_ref: Mapped[str] = mapped_column(String(64), nullable=False)
+    subject_code: Mapped[str] = mapped_column(String(128), nullable=False)
+    payload_json: Mapped[dict] = mapped_column(JSON, nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        Index("ix_catalog_cache_lookup", "school_id", "term_ref", "subject_code"),
+        UniqueConstraint("school_id", "term_ref", "subject_code", name="uq_catalog_cache_key"),
+    )

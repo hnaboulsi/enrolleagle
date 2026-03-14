@@ -22,7 +22,6 @@ dist/
 # Build/cache
 coverage/
 *.sqlite3
-*.db
 
 # Legacy archive created during rebuild
 _legacy/

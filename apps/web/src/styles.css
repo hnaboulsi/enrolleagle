@@ -1,8 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;600;700&family=Fira+Sans:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
-  font-family: "Inter", "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  background: radial-gradient(circle at top right, #fef3c7, #f8fafc 45%), #f8fafc;
+  margin: 0;
+  font-family: "Fira Sans", "Segoe UI", system-ui, sans-serif;
+  color: #0f172a;
+  background:
+    radial-gradient(circle at top left, rgba(45, 212, 191, 0.18), transparent 32%),
+    radial-gradient(circle at top right, rgba(249, 115, 22, 0.14), transparent 26%),
+    linear-gradient(180deg, #f0fdfa 0%, #f8fafc 42%, #ecfeff 100%);
+}
+
+.font-display {
+  font-family: "Fira Code", "SFMono-Regular", ui-monospace, monospace;
+}
+
+::selection {
+  background: rgba(13, 148, 136, 0.18);
+  color: #134e4a;
+}
+
+a,
+button {
+  cursor: pointer;
+}
+
+button:disabled,
+a[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }

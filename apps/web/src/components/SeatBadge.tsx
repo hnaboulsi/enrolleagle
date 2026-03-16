@@ -12,6 +12,8 @@ const colorMap: Record<string, string> = {
   UNKNOWN: 'bg-slate-100 text-slate-500',
   BLOCKED: 'bg-orange-100 text-orange-700',
   UNSUPPORTED: 'bg-orange-100 text-orange-700',
+  PAUSED: 'bg-slate-200 text-slate-600',
+  DELETED: 'bg-slate-200 text-slate-600',
 }
 
 export default function SeatBadge({ status, openSeats, waitlistSeats }: Props) {
@@ -19,9 +21,11 @@ export default function SeatBadge({ status, openSeats, waitlistSeats }: Props) {
   const label = status === 'OPEN' && openSeats != null
     ? `Open (${openSeats})`
     : status === 'WAITLIST' && waitlistSeats != null
-      ? `Waitlist (${waitlistSeats})`
+        ? `Waitlist (${waitlistSeats})`
       : status === 'FULL'
         ? 'Full'
+        : status === 'PAUSED'
+          ? 'Paused'
         : status
 
   return (

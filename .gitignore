@@ -12,6 +12,8 @@ venv/
 # Node
 node_modules/
 dist/
+*.tsbuildinfo
+*.egg-info/
 
 # Env files
 .env
@@ -22,6 +24,7 @@ dist/
 # Build/cache
 coverage/
 *.sqlite3
+*.db
 
 # Legacy archive created during rebuild
 _legacy/

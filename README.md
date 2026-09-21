@@ -2,6 +2,8 @@
 
 Course-seat availability tracker that polls supported college providers and sends deduplicated email notifications when a configured section opens.
 
+![EnrollEagle architecture](media/architecture.svg)
+
 ## Why I Built It
 
 Seat-monitoring sites differ in markup, authentication, and anti-bot behavior. I built EnrollEagle to isolate those provider differences and make the polling, state transitions, and notification rules testable without automating enrollment.

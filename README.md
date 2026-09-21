@@ -4,7 +4,23 @@ EnrollEagle is a community college course seat tracker.
 
 It monitors seat availability for configured course sections and sends email notifications when seats open.
 
-## Architecture
+It does not automate enrollment, bypass access controls, or promise that an open seat will remain
+available. The project is about provider isolation, scheduled polling, state transitions, and
+deduplicated notification delivery.
+
+## Demo / Results
+
+Parser tests run against saved provider fixtures, while API tests exercise OAuth state handling
+and the poll-to-notification transition against isolated SQLite databases. A browser screenshot
+and a live-provider reliability study are still missing and are not claimed as completed results.
+
+## What I Built
+
+I built the provider contract and parsers, Flask API, watch-state model, scheduled polling path,
+deduplication logic, email adapters, React client, deployment configuration, and test fixtures.
+Google OAuth, PostgreSQL, the college schedule systems, AWS SES, and Resend are external services.
+
+## How It Works
 - Backend: Flask REST API (`apps/api`)
 - Frontend: React + Vite + TypeScript (`apps/web`)
 - DB: PostgreSQL
@@ -20,7 +36,7 @@ It monitors seat availability for configured course sections and sends email not
 - `packages/providers`: provider adapter package + parser fixtures/tests
 - `infra`: docker-compose + AWS/Vercel deployment docs
 
-## Local Setup
+## Running It
 
 ### 1) Start Postgres
 ```bash
@@ -88,7 +104,7 @@ Create an OAuth 2.0 Client ID (Web application) in Google Cloud Console.
 - `https://<aws-frontend-domain>`
 - `https://<vercel-frontend-domain>`
 
-## API Endpoints
+## API Surface
 - `GET /auth/google/start`
 - `GET /auth/google/callback`
 - `POST /auth/logout`
@@ -134,7 +150,7 @@ When block/challenge responses are detected (403/429 or challenge markers), stat
 
 This enables user-side reporting for sites where server-side scraping is blocked, without bypass techniques.
 
-## Testing
+## Tests
 ### Provider package tests
 ```bash
 cd packages/providers
@@ -148,6 +164,16 @@ source .venv/bin/activate
 pytest
 ```
 
-## Deploy Guides
-- AWS Phase 1: `infra/aws/DEPLOY_AWS.md`
-- Vercel Phase 2 migration: `infra/vercel/DEPLOY_VERCEL.md`
+## Deployment
+
+- AWS container path: `infra/aws/DEPLOY_AWS.md`
+- Vercel migration path: `infra/vercel/DEPLOY_VERCEL.md`
+
+## Tech
+
+Python, Flask, SQLAlchemy, Alembic, PostgreSQL, React, TypeScript, Vite, httpx, selectolax,
+Docker, pytest, AWS SES, and Resend.
+
+## License
+
+MIT. See [`LICENSE`](LICENSE).
